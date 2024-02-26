@@ -1078,6 +1078,8 @@ Can enable access to a bucket from other accounts by:
   - Supports failover controls for S3 Multi-Region access points.
 
 *** Encryption
+- *IMPORANT:* When using SSE in S3, symmetric keys must be used.
+
 - Buckets are not encrypted, objects are, and they can use different type of encryption
 - SSE is mandatory where S3 handles the encryption keys and manages the encryption
 - SSE save the computation time compared to CSE
@@ -1251,6 +1253,7 @@ File interface into S3 that bridges with on-premises file storage though mount p
 Cloud-backed storage *volumes* that you can mount as *iSCSI, NFS, or SMB* devices from your on-premises application servers.
 
 - *IMPORTANT:* EBS, S3, and S3 Glacier can be used as cloud storage solutions.
+- *IMPORTANT:* Does not provide access to the data from AWS directly. Need additiona steps.
 
 - The VM of the SGV provides volumes over iSCSI to the on premise servers.
 - Used for migrations, extensions to on-premise, storage tiering, DR and replacement of backup systems.
@@ -1490,6 +1493,7 @@ Spans multiple AWS Regions, enabling low latency global reads and disaster recov
 - *IMPORTANT:* To ensure read-after-write consistency and minimal latency between regions:
   + Use write forwading in the second region to be able to accept write operations.
 - *IMPORTANT:* To test DR producedures, use managed planned failover.
+  + DON'T USE IT for DR only for testing. This is because it needs the primary DB to be avaialble to initiate the failover.
 
 - Consists of one primary region where your data is mastered, and one read-only, secondary region.
 - Has managed planned failover capability to change which region hosts the primary cluster.
@@ -1780,6 +1784,7 @@ Distributed in-memory cache for Redis and Memcached engines.
 
 - *IMPORTANT:* For Redis you can enable auth-token parameter which needs to be sent with all subsequent commands for the cluster.
 - *IMPORTANT:* Usually used for dynamic websites.
+- *IMPORTANT:* Memcached does not support HA or automatic cluster failover. User Redis instead.
 
 - Memcached is used for simple solutions with string only data types.
 - Redis for more complex solutions with hash, maps, etc data types.
@@ -2043,14 +2048,14 @@ Portable data center within a shipping container on a truck (special order) .
 
 - Single truck, not economical to small data or multi site.
 
-* NETWORKING
-** PUBLIC AND PRIVATE SERVICES
+* Networking
+** Public and Private Services
 - Public Service: service that has a public endpoint from the networking perspective (i.e. S3, CloudFront).
 - Private Service: service that runs withing a VPC (i.e. EC2, RDS).
 
 [[./img/services_types_networking.png]]
 
-** VPC (VIRTUAL PRIVATE CLOUD)
+** VPC (Virtual Private Cloud)
 Virtual network in the cloud dedicated to your AWS account where you can launch AWS resources
 
 - *IMPORTANT:* To maintain redundancy and fault tolerance, create at least 2 subnets configured in 2 AZs.
@@ -2062,8 +2067,8 @@ Virtual network in the cloud dedicated to your AWS account where you can launch 
 
 - Virtual Private Gateway: VPN endpoint on the VPC side of a site-to-site VPN connection. Can be attached to a single VPC.
 
-*** NETWORKING COMPONENTS
-**** ROUTE TABLES
+*** Networking Components
+**** Route Tables
 Set of rules, called routes, that are used to determine where network traffic is directed.
 
 - A subnet can only be associated with 1 route table at a time.
@@ -2072,7 +2077,7 @@ Set of rules, called routes, that are used to determine where network traffic is
 - Must update the route table for any subnet that uses gateways or connections.
 - Longest prefix match: uses the most specific route in the route table that matches the traffic to determine how to route the traffic.
 
-**** SUBNETS
+**** Subnets
 
 - *IMPORTANT:* A subnet can only have one route table. If you need more route tables, create more subnets.
 - *IMPORTANT:* First four IP addresses and the last IP address in each subnet CIDR block are NOT available.
@@ -2087,7 +2092,7 @@ Set of rules, called routes, that are used to determine where network traffic is
   - Private Subnet: doesn't have an internet gateway
   - VPN-only Subnet: has a virtual private gateway instead
 
-**** NETWORK INTERFACES
+**** Network Interfaces
 They are a virtual network interface that can be attached and detached from instances. However, the primary network interface cannot be detached.
 
 They can include:
@@ -2101,7 +2106,7 @@ They can include:
 - Source/destination check flag
 - Description
 
-**** ELASTIC IP ADDRESSES
+**** Elastic IP Addresses
 Static, public IPv4 address.
 
 - Can be associated with any instance or network interface for any VPC in your account.
@@ -2110,7 +2115,7 @@ Static, public IPv4 address.
 - Charges per Elastic IP.
 - Limited to five Elastic IP addresses.
 
-**** NACL (NETWORK ACCESS CONTROL LISTS)
+**** NACL (Network Access Control Lists)
 Stateless firewall to control inbound and outbound traffic for your subnets.
 
 - *IMPORTANT:* The default NACL is configured to allow all traffic to flow in and out of the subnets to which it is associated.
@@ -2125,7 +2130,7 @@ Stateless firewall to control inbound and outbound traffic for your subnets.
 
 [[./img/nacl_firewalls.png]]
 
-**** SG (SECURITY GROUPS)
+**** SG (Security Groups)
 Stateful firewalls to control inbound and outbound traffic for network interfaces.
 
 - *IMPORTANT:* The default SG allow inbound traffic from network interfaces that are  assigned to the same SG and all outbound traffic
@@ -2142,7 +2147,7 @@ Stateful firewalls to control inbound and outbound traffic for network interface
 - Self References: allow traffic from the same security group.
   [[./img/self_references_security_groups.png]]
 
-**** INTERNET GATEWAYS
+**** Internet Gateways
 Allows communication between instances in your VPC and the internet.
 
 - Performs network address translation for instances that have been assigned public IPv4 addresses.
@@ -2152,14 +2157,14 @@ Allows communication between instances in your VPC and the internet.
   - Ensure that instances in the subnet have a globally unique IP address (public IPv4 address, Elastic IP address, or IPv6 address).
   - Ensure that the NACL and SG rules allow the relevant traffic to flow to and from your instance
 
-***** EGRESS-ONLY INTERNET GATEWAYS
+***** Egress-Only Internet Gateways
 Allows outbound communication over IPv6 from instances in your VPC to the Internet, and prevents the Internet from initiating an IPv6 connection with your instances.
 
 - Stateful.
 - Cannot associate a SG with an egress-only Internet gateway.
 - Can use a NACL to control the traffic to and from the subnet for which the egress-only Internet gateway routes traffic.
 
-**** VPC ROUTER
+**** VPC Router
 Virtual router within a VPC. It is what AWS uses to route traffic withing a VPC.
 
 - HA across all AZs in that region, and scalable.
@@ -2189,7 +2194,7 @@ Enable instances in a private subnet to connect to the internet or other AWS ser
 - Provides instances launched in a non-default VPC with private DNS hostname and possibly a public DNS hostname, depending on the DNS attributes you specify for the VPC and if your instance has a public IPv4 address.
 - In a VPC, the DNS is accessed via the VPC .2 address
 
-**** DHCP (DYNAMIC HOST CONFIGURATION PROTOCOL)
+**** DHCP (Dynamic Host Configuration Protocol)
 Provides a standard for passing configuration information to hosts on a TCP/IP network.
 
 - Can assign a custom domain name to instances, and use up to four DNS servers by specifying a special set of DHCP options to use with the VPC.
@@ -2198,7 +2203,7 @@ Provides a standard for passing configuration information to hosts on a TCP/IP n
 
 [[./img/dhcp_in_vpcs.png]]
 
-*** ROUTING
+*** Routing
 - *IMPORTANT:* To allow instances inside the VPC to initiate outbound connections to the internet but prevent unsolicited inbound connections:
   - For IPv4, Use a NAT gateway or a NAT instance.
   - For IPv6, use an egress-only internet gateway.
@@ -2211,13 +2216,13 @@ Provides a standard for passing configuration information to hosts on a TCP/IP n
 
 [[./img/vpc_advanced_routing.png]]
 
-**** TO THE INTERNET
+**** To The Internet
 - Services never have public IPv4 addressing configured on them within a VPC. They are handled by the IGW.
 - Internet Gateway: it is the door to connect the VPC to the internet
   - Only one internet gateway can be attached to one VPC (1 to 1)
   - You cannot block IP addresses from the IGW
 
-**** BGP (BORDER GATEWAY PROTOCOL)
+**** BGP (Border Gateway Protocol)
 - Autonomous system, where routers are controlled by one entity.
 - ASN are unique and allocated by IANA (0-65535), (64512-65535 are private) (use to know and differentiate different AS)
 - Operates over tcp/179.
@@ -2231,12 +2236,12 @@ Provides a standard for passing configuration information to hosts on a TCP/IP n
 
 [[./img/bgp.png]]
 
-**** TRAFFIC MIRRORING
+**** Traffic Mirroring
 Replicate the network traffic from EC2 instances within the VPC to security and monitoring appliances for content inspection, threat monitoring, troubleshooting, and more.
 
 - Both Nitro and non-Nitro instances are supported.
 
-*** ENDPOINTS
+*** Endpoints
 Privately connect a VPC to supported AWS services and VPC endpoint services without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection.
 
 - *IMPORTANT:* Supports IPv4 TCP traffic only.
@@ -2247,7 +2252,7 @@ Privately connect a VPC to supported AWS services and VPC endpoint services with
 - Endpoints are virtual devices.
 - Regional service.
 
-**** GATEWAY ENDPOINTS
+**** Gateway Endpoints
 Provide private access to S3 and DynamoDB (public resources without needing public IPs or NATS)
 
 - *IMPORTANT:* Used for S3 and DynamoDB only. Only supported gateway for DynamoDB.
@@ -2262,7 +2267,7 @@ Provide private access to S3 and DynamoDB (public resources without needing publ
 
 [[./img/s3_gateway_interface_endpoints.png]]
 
-**** INTERFACE ENDPOINTS
+**** Interface Endpoints
 EIN with a private IP address that serves as an entry point for traffic destined to a supported service.
 
 - *IMPORTANT:* Uses PrivateLink where PrivateDNS overrides the default DNS for services (enabled by default)
@@ -2276,7 +2281,7 @@ EIN with a private IP address that serves as an entry point for traffic destined
 
 [[./img/interface_endpoint.png]]
 
-**** ENDPOINT POLICIES
+**** Endpoint Policies
 Control the principal and the actions allowed (restrict to specific buckets for example)
 
 - By default they allow access to an entire service in a region.
@@ -2286,7 +2291,7 @@ Control the principal and the actions allowed (restrict to specific buckets for 
 
 [[./img/endpoint_policies.png]]
 
-*** IPV6
+*** IPv6
 - *IMPORTANT:* Every IPv6 address used in a VPC is publicly routable (NAT is not used in IPv6).
 - *IMPORTANT:* Also IPv6 must be configured on services, but not everything has support for IPv6 such as (PrivateLink, Interface Endpoints, or NAT)
 
@@ -2306,7 +2311,7 @@ A VPN connection consists of:
 - Customer gateway (which is a physical device or software appliance on your side of the VPN connection) located in your data center.
 - A diagram of the connection
 
-**** SITE-TO-SITE VPN
+**** Site-To-Site VPN
 Logical connection between VPNC and on-premise network encrypted using IPSec running over the public internet
 
 - *IMPORTANT:* Can be used as a backup for Direct Connect (DX) or used with it to set up initial connection as it is fast.
@@ -2328,7 +2333,7 @@ Logical connection between VPNC and on-premise network encrypted using IPSec run
 - Fully Highly Available
   [[./img/aws_site_to_site_vpn_fully_HA.png]]
 
-***** ACCELERATED SITE-TO-SITE VPN
+***** Accelerated Site-To-Site VPN
 Uses the AWS Global Accelerator network to speed up.
 
 - *IMPORTANT:* Can only be enabled when creating a TGW VPN attachment only, not with VGW.
@@ -2342,7 +2347,7 @@ Uses the AWS Global Accelerator network to speed up.
 
 [[./img/aws_accelerated_site_to_site_ipsec_tunnels.png]]
 
-**** VPN CLOUDHUB
+**** VPN CloudHub
 Hub-and-spoke VPN that you can use with or without a VPC.
 
 - *IMPORTANT:* Used if you have more than one remote network, and want multiple AWS-managed VPN connections to enable communication between these networks.
@@ -2353,7 +2358,7 @@ Hub-and-spoke VPN that you can use with or without a VPC.
 
 [[./img/vpn_cloud_hub.png]]
 
-**** CLIENT VPN
+**** Client VPN
 Managed implementation of OpenVPN.
 
 - Connect to a client VPN endpoint associated to one VPC.
@@ -2362,7 +2367,7 @@ Managed implementation of OpenVPN.
 
 [[./img/aws_client_vpn.png]]
 
-***** SPLIT TUNNEL
+***** Split Tunnel
 Route traffic through different routes.
 
 - Use when you don't want all traffic going through the VPN (i.e. internet and company access).
@@ -2370,7 +2375,7 @@ Route traffic through different routes.
 
 [[./img/aws_client_vpn_split_tunnel.png]]
 
-*** PRIVATE LINK
+*** Private Link
 Connect privately a VPC to supported AWS services, services hosted by other AWS accounts.
 
 - *IMPORTANT:* Endpoints can be accessed across both intra- and inter-region VPC peering connections.
@@ -2385,7 +2390,7 @@ Connect privately a VPC to supported AWS services, services hosted by other AWS 
 
 [[./img/aws_privatelink.png]]
 
-*** VPC PEERING
+*** VPC Peering
 Networking connection between two VPCs that enables to route traffic between them privately using private IPv4 addresses or IPv6 addresses.
 
 - Instances in either VPC can communicate with each other as if they are within the same network.
@@ -2402,7 +2407,7 @@ Networking connection between two VPCs that enables to route traffic between the
   - Unicast reverse path forwarding in VPC peering connections is not supported.
   - For inter-region peering, you cannot create a security group rule that references a peer VPC security group. Communication over IPv6 is not supported as well.
 
-*** VPC SHARING
+*** VPC Sharing
 Allows multiple AWS accounts to create their application resources  into shared, centrally-managed VPC.
 
 - *IMPORTANT:* The account that owns the VPC (owner) shares one or more subnets with other accounts (participants) that belong to the same organization.
@@ -2410,7 +2415,7 @@ Allows multiple AWS accounts to create their application resources  into shared,
 - After a subnet is shared, the participants can view, create, modify, and delete their application resources in the subnets shared with them.
 - Participants cannot view, modify, or delete resources that belong to other participants or the VPC owner.
 
-*** VPC FLOW LOGS
+*** VPC Flow Logs
 Capture information about the IP traffic going to and from network interfaces in a VPC that is *published to CloudWatch Logs*.
 
 - *IMPORTANT*: VPC Flow Logs cannot be used to inspect the network packets.
@@ -2425,7 +2430,7 @@ Capture information about the IP traffic going to and from network interfaces in
 
 [[./img/vpc_flow_logs.png]]
 
-** DX (DIRECT CONNECT)
+** DX (Direct Connect)
 Create a *dedicated private physical connection* from a remote network to your VPC.
 
 - *IMPORTANT:* Used for low & consistent latency + high speeds (best for high speeds in hybrid networks)
@@ -2443,17 +2448,17 @@ Create a *dedicated private physical connection* from a remote network to your V
 
 [[./img/aws_direct_connect_BGP_sessions_VLAN.png]]
 
-*** CROSS CONNECTS
+*** Cross Connects
 - In order to connect the AWS cage to the customer cage they need a Letter of Authorization Customer Facility Access (LOA-CFA)
 
 [[./img/aws_direct_connect_connection_process.png]]
 
-*** VIF (VIRTUAL INTERFACE)
+*** VIF (Virtual Interface)
 They are networking interfaces to that enable AWS to interact with Direct Connect connections.
 
 - A single DX Connection can have up to 50 public and 50 private VIFs and 1 transit VIF
 
-**** PUBLIC VIFS
+**** Public VIFS
 Connect to AWS resources that are reachable by a publich IP address
 
 - *IMPORTANT:* Running an IPSec VPN over the top of a DX connection it is necessary to use a public VIF.
@@ -2464,7 +2469,7 @@ Connect to AWS resources that are reachable by a publich IP address
 - AWS advertises all AWS public IP ranges to you over the public VIF even the public IPs you own.
 - China is set up separate from the AWS global region and it is excluded by default.
 
-**** PRIVATE VIFS
+**** Private VIFS
 Connect to your resources hosted in a VPC using their private IP addresses.
 
 - *IMPORTANT:* You need one private VIF for each VPC to connect to from the DX connection.
@@ -2479,7 +2484,7 @@ Connect to your resources hosted in a VPC using their private IP addresses.
 
 [[./img/aws_direct_connect_private_vif.png]]
 
-**** TRANSIT VIFS
+**** Transit VIFS
 Connect to resources hostes in a VPC using private IPs through a transit gateway.
 
 - *IMPORTANT:* Used to connect multiple VPCs in the same region with a DX connection through a DXGW.
@@ -2494,24 +2499,24 @@ Connect to resources hostes in a VPC using private IPs through a transit gateway
 
 [[./img/aws_direct_connect_transit_vif.png]]
 
-*** SITELINK
+*** SiteLink
 Can link your on-premises data centers to Direct Connect and send data between them over the shortest path between your AWS Direct Connect locations.
 
 - Done by connecting your AWS resources to Direct Connect locations around the globe.
 
-*** MACSEC
-- STANDARD FOR FRAMES ENCRYPTION (LAYER 2)
-- IT IS HOP BY HOP, BETWEEN TWO SWITCHES OR ROUTERS
-- AS IT IS NOT END TO END, IT DOES NOT REPLACE IPSEC OVER DX
+*** MACSec
+- Standard for frames encryption (layer 2)
+- St is hop by hop, between two switches or routers
+- As it is not end to end, it does not replace ipsec over dx
 
-[[./IMG/AWS_DIRECT_CONNECT_MACSEC_PACKET.PNG]]
+[[./img/aws_direct_connect_macsec_packet.png]]
 
-[[./IMG/AWS_DIRECT_CONNECT_MACSEC_INFRASTRUCTURE.PNG]]
+[[./img/aws_direct_connect_macsec_infrastructure.png]]
 
-** DXGW (DIRECT CONNECT GATEWAY)
+** DXGW (Direct Connect Gateway)
 Connect your Direct Connect connection over a private VIFs to one or more VPCs in the same or different Regions.
 
-- *IMPORTANT:* Does not route between attachments, that is why DXGW + TGW + transit VFIs are used.
+- *IMPORTANT:* Does not route between attachments, that is why DXGW + TGW + transit VIFs are used.
 
 - Globally available resource, accessible to from all regions.
 - 1 private VIF = 1 DGW + 10 VGW per DXGW
@@ -2521,7 +2526,7 @@ Connect your Direct Connect connection over a private VIFs to one or more VPCs i
 
 [[./img/aws_direct_connect_gateways_routing_problem.png]]
 
-**** MULTI-ACCOUNT SUPPORT
+*** Multi-Account Support
 Associate up to 10 VPCs from multiple accounts with a DXGW.
 
 - The VPCs must be owned by accounts that belong to the same AWS payer account ID.
@@ -2529,7 +2534,7 @@ Associate up to 10 VPCs from multiple accounts with a DXGW.
 
 [[./img/aws_direct_connect_gateways_cross_account.png]]
 
-*** LAG (LINK AGGREGATION GROUPS)
+*** LAG (Link Aggregation Groups)
 Multiple Direct Connect Connection to act as one (speed * n)
 
 - Is not a resilience component, it is just used to speed up the connection.
@@ -2538,7 +2543,7 @@ Multiple Direct Connect Connection to act as one (speed * n)
 
 [[./img/aws_direct_connect_lag.png]]
 
-*** PRICING
+*** Pricing
 - Pay only for the network ports you use and the data you transfer over the connection.
 - Pricing is per port-hour consumed for each port type.
   - Data transfer out over AWS Direct Connect is charged per GB.
@@ -2559,7 +2564,7 @@ Network transit hub to connect VPCs and on-premises networks to a single gateway
 
 [[./img/transit_gateways.png]]
 
-*** PEERING ATTACHMENTS
+*** Peering Attachments
 Attache network resources both intra and inter region to route traffic between them.
 
 - Need static pairs to make networking function (no route learning or propagation across peers).
@@ -2568,13 +2573,13 @@ Attache network resources both intra and inter region to route traffic between t
 
 [[./img/transit_gateways_peering_attachments.png]]
 
-*** MULTICAST & ISOLATED ROUTING
+*** Multicast & Isolated Routing
 - Multicasting can be enabled (disaled by default).
 - Isolated routing used to make network traffic isolated.
 
 [[./img/transit_gateways_isolated_routing.png]]
 
-** GLOBAL ACCELERATOR
+** Global Accelerator
 Improve the availability and performance of applications to local and global users.
 
 - *IMPORTANT:* Provides static IP addresses that act as a fixed entry point to a single or multiple regions.
@@ -2589,12 +2594,12 @@ Improve the availability and performance of applications to local and global use
 
 [[./img/aws_global_accelerator.png]]
 
-*** CUSTOM ROUTING ACCELERATOR
+*** Custom Routing Accelerator
 Route user traffic to specific EC2 instance in a single or multiple regions.
 
 - Supports only VPC subnet endpoints, cannot use ELB.
 
-** CLOUDFRONT
+** Cloudfront
 CDN (content delivery network) service for content delivery with the best possible performance and the lowest latency.
 
 - *IMPORTANT:* Cannot configure rules to direct methods to different origins. Only can configure the "AllowedMethods" parameter which controls which methods are available.
@@ -2607,7 +2612,7 @@ CDN (content delivery network) service for content delivery with the best possib
 - *HTTP and WebSocket* protocols are only supported.
 - Use Lambda@Edge to customize the content or serve private content using signed URLs or signed cookies.
 
-*** COMPONENTS
+*** Components
 - Origin: source location of the content (S3 or custom HTTP server).
   - Origins can be groups in origin groups for resilience and origin failover.
 - Distribution: configuration unit in CloudFront
@@ -2622,7 +2627,7 @@ CDN (content delivery network) service for content delivery with the best possib
 
   [[./img/cloudfront_behaviors.png]]
 
-*** TTL & INVALIDATION
+*** TTL & Invalidation
 - An object in an edge location is healthy if it is withing the TTL.
 - Default TTL (per behavior) is 24 hours (validity period).
   - Minimum TTL and Maximum TTL can be set and also per object TTL
@@ -2659,16 +2664,16 @@ CDN (content delivery network) service for content delivery with the best possib
 
 [[./img/cloudfront_ssl.png]]
 
-*** CACHING PERFORMANCE AND OPTIMIZATION
+*** Caching Performance & Optimization
 - A request can have object names, query string parameters, cookies, and request headers
   - You can customize each parameter if they should be forwarded to CF and if CF should cached them based on all or selected.
   - Cache only on what can change the objects.
   - The more things involved in caching, the less efficient the process is.
 
-*** SECURITY
+*** Security
 - *IMPORTANT:* Cannot assign IAM rolesto a CF distribution.
 
-**** ORIGIN SIDE
+**** Origin Side
 - Origin Access Identity (OAI): only applicable for S3 (not Static Site Hosting)
   - *IMPORTANT:* Can be associated with CloudFront Distributions which CF becomes the OAI to only allow CF access to the S3 bucket.
   - The OAI can be used int S3 Bucket Policies
@@ -2685,7 +2690,7 @@ CDN (content delivery network) service for content delivery with the best possib
 
   [[./img/cloudfront_security_custom_origins.png]]
 
-**** USER SIDE
+**** User Side
 - Behaviors can be run in public or in private mode (requires signed cookie or URL).
 - Signers are used to create the signed cookies or URLs.
   - Create trusted key group(s) and assign them to behaviors, can have multiple keys and no need to use the root user account.
@@ -2698,7 +2703,7 @@ CDN (content delivery network) service for content delivery with the best possib
 
 [[./img/cloudfront_security_user_side.png]]
 
-**** GEO RESTRICTION
+**** Geo Restriction
 - CloudFront Geo Restriction is a whitelist or blacklist *country only*. Uses a GeoIP DB. And the config applies to the entire distribution.
 
   [[./img/cloudfront_security_geo_restriction.png]]
@@ -2708,14 +2713,14 @@ CDN (content delivery network) service for content delivery with the best possib
 
   [[./img/cloudfront_security_3rd_party_geolocation.png]]
 
-**** FIELD-LEVEL ENCRYPTION
+**** Field-Level Encryption
 - Encryption of fields on the edge using a public key separately from the HTTPS tunnel.
 - Use to encrypt sensitive data on the edge so no plain text is on the server.
 - Private key is needed to decrypt the data so you can allow certain parts of the app the key
 
 [[./img/cloudfront_security_field_level_encryption.png]]
 
-** API GATEWAY
+** API Gateway
 Create, publish, maintain, monitor, and secure APIs at any scale. HIPAA eligible service.
 
 - *IMPORTANT:* Edge-optimized API endpoints are the best for geographically distributed clients and mobile clients.
@@ -2732,13 +2737,13 @@ Create, publish, maintain, monitor, and secure APIs at any scale. HIPAA eligible
 
 [[./img/apigateway_architecture.png]]
 
-*** ENDPOINT TYPES
+*** Endpoint Types
   - Edge-optimized: routed to the nearest CloudFront POP. Default for API Gateway REST APIs.
   - Regional: requests targeted to a specific region, less connection overhead.
     - *IMPORTANT:* Can have multiple regional APIs to the same custom domain and use latency-based routing in R53.
   - Private: only accessible in a VPC via interface endpoints.
 
-*** STAGES
+*** Stages
 - Changes made in API Gateway are not LIVE, they need to be in a staged to be used.
 - Each stage has its own configuration and are not immutable, can be overwritten and rolled back.
 - Stages have versions for breaking changes.
@@ -2749,7 +2754,7 @@ Create, publish, maintain, monitor, and secure APIs at any scale. HIPAA eligible
 
 [[./img/apigateway_stages.png]]
 
-*** INTEGRATIONS
+*** Integrations
 In the integration request, it can be just pass through the info (proxying) or translate it for a service.
 
 - MOCK: used for testing, no backend involvement.
@@ -2760,7 +2765,7 @@ In the integration request, it can be just pass through the info (proxying) or t
 
 [[./img/apigateway_integrations.png]]
 
-*** TYPES
+*** Types
 **** HTTP
 - Only support regional endpoints
 - Only support mutual TLS (both parties authenticate with certs).
@@ -2780,19 +2785,19 @@ In the integration request, it can be just pass through the info (proxying) or t
 - Supports CW, CW logs, A kinesis data firehose for access logs, execution logs, AWS X-Ray.
 - Integrates with public HTTP endpoints, AWS services, Lambda functions, NLB, and mock integration.
 
-**** WEBSOCKETS APIS
+**** Websockets APIS
 - Supports two way communications
 - Stateful frontend for an AWS service (such as Lambda or DynamoDB) or for an HTTP endpoint.
   - The WebSocket API invokes your backend based on the content of the messages it receives from client apps.
 - *IMPORTANT:* @connection command can be used with WebSockets.
 
-*** THROTTLING LIMITS
+*** Throttling Limits
 - AWS throttling limits: across all accounts and clients in a region. Prevent API and account from being overwhelmed by too many requests (cannot be changed by the customer).
 - Per-account limits for a specific region: can be increased upon request.
 - Per-Api, per-stage (per api method).
 - Per-client throttling limits applied to clients that use api keys, to differentiate different users.
 
-*** EXTRA
+*** Extra
 - Errors:
   - 400: bad request - generic, hard to diagnose
   - 403: access denied - authorizer denies
@@ -2811,7 +2816,7 @@ In the integration request, it can be just pass through the info (proxying) or t
 - To troubleshoot an API Gateway REST API or WebSocket API that you're developing, enable execution logging and access logging.
   + Not useful when having "504 Gateway Timeout" errors.
 
-** ELB (ELASTIC LOAD BALANCING)
+** ELB (Elastic Load Balancing)
 Distributes incoming application or network traffic across multiple targets in multiple AZs.
 
 - Regional service that is HA and auto scalable.
@@ -2828,8 +2833,8 @@ Distributes incoming application or network traffic across multiple targets in m
 
 [[./img/amazon_elastic_load_balances.png]]
 
-**** TYPES
-***** ALB (APPLICATION LOAD BALANCER)
+**** Types
+***** ALB (Application Load Balancer)
 Balances layer 7 (HTTP/HTTPS traffic/WebSocket) (no other protocol)
 
 - *IMPORTANT:* Does not support assigning static IP addresses. If you need to do it there are 2 options:
@@ -2849,7 +2854,7 @@ Balances layer 7 (HTTP/HTTPS traffic/WebSocket) (no other protocol)
   + Least outstanding requests: request vary in complexity or the targets have different processing capability
   + Weighted random: route requests randomly and evenly
 
-****** BENEFITS
+****** Benefits
 - Support for path-based and host-based routing.
 - Support for routing requests to multiple applications on a single EC2 instance.
 - Support for registering targets by IP address, including targets outside the VPC for the load balancer.
@@ -2863,7 +2868,7 @@ Balances layer 7 (HTTP/HTTPS traffic/WebSocket) (no other protocol)
 - Supports Application-based cookie stickiness. This ensures that clients connect to the same load balancer target for the duration of their session using application cookies.
 - Supports dual-stack mode. This enables you to create IPv6 target groups and link IPv4 and IPv6 clients to targets in IPv6 or dual-stack subnets.
 
-***** NLB (NETWORK LOAD BALANCER)
+***** NLB (Network Load Balancer)
 Balances layer 4 (TCP/UDP with or w/o TLS)
 
 - *IMPORTANT:* Don't have SGs configured and pass connections straight to the target with the source IP of the client preserved.
@@ -2878,7 +2883,7 @@ Balances layer 4 (TCP/UDP with or w/o TLS)
 - Health check just check ICMP/TCP Handshake (no app aware)
 - Supports TLS termination on Network Load Balancers. Preserve the source IP of the clients to the back-end applications, while terminating TLS on the load balancer.
 
-****** BENEFITS
+****** Benefits
 - Ability to handle volatile workloads and scale to millions of requests per second.
 - Support for static IP addresses for the load balancer, or assign one Elastic IP address per subnet enabled for the load balancer.
 - Support for registering targets by IP address.
@@ -2888,7 +2893,7 @@ Balances layer 4 (TCP/UDP with or w/o TLS)
 - Supports forwarding traffic directly from NLB to ALB.
 - Supports load balancing for both IPv4 and IPv6 clients.
 
-***** GWLB (GATEWAY LOAD BALANCER)
+***** GWLB (Gateway Load Balancer)
 Primarily used for deploying, scaling, and running third-party virtual appliances such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems.
 
 - *IMPORTANT:* Cannot specify publicly routable IP addresses as your target
@@ -2903,14 +2908,14 @@ Primarily used for deploying, scaling, and running third-party virtual appliance
 
 [[./img/ec2_load_balancer_gateway_architecture.png]]
 
-***** CLB (CLASSIC LOAD BALANCER)
+***** CLB (Classic Load Balancer)
 Internet-facing load balancer has a publicly resolvable DNS name, so it can route requests from clients over the Internet to the EC2 instances.
 
 - First type of load balancers and they should be avoided
 - Ensure to keep approximately the same number of instances in each AZ registered with the load balancer.
 - Every unique HTTPS name requires an individual CLB because SNI (server name indication) isn't supported
 
-**** CROSS-ZONE LOAD BALANCER
+**** Cross-Zone Load Balancer
 Distribute the connections across all instances of different AZs for equal load across instances.
 
 - Solves the problem that if in one subnet there are 5 instances and the other 1, then the load is not equally distributed among the instances.
@@ -2919,7 +2924,7 @@ Distribute the connections across all instances of different AZs for equal load 
 
 [[./img/amazon_elastic_load_balances_cross_zone.png]]
 
-**** CONNECTION STICKINESS
+**** Connection Stickiness
 Server-side piece of information which persists when you interact with that app.
 
 - Can be stored on a server or externally (stateless)
@@ -2931,7 +2936,7 @@ Server-side piece of information which persists when you interact with that app.
 
 [[./img/amazon_elastic_load_balances_connection_stickiness.png]]
 
-**** CONNECTION DRAINING
+**** Connection Draining
 Allows the connections to be gracefully removed from a load balancer when the instance is going out of service
 
 - *IMPORTANT:* Used when users get request timeout and partially loaded pages.
@@ -2942,7 +2947,7 @@ Allows the connections to be gracefully removed from a load balancer when the in
 - Timeout between 1 and 3600 seconds (default 300).
 - If it is deregistered it goes to "InService" and waits for all connections to complete or timeout
 
-**** DEREGISTRATION DELAY
+**** Deregistration Delay
 Stops sending requests to deregistering targets, existing connections can continue until they complete naturally.
 
 - Supported on ALB, NLB, and GWLB
@@ -2950,10 +2955,10 @@ Stops sending requests to deregistering targets, existing connections can contin
 - Enabled by default
 - Can range from (0 to 3600 seconds) default 300
 
-**** X-FORWARDED & PROXY PROTOCOL
+**** X-Forwarded & Proxy Protocol
 Used when using a LB and you want to know the source IP
 
-***** X-FORWARDED
+***** X-Forwarded
 HTTP header (only works on HTTP/S protocols no other)
 
 - Header is added or appended by proxies/ELBs
@@ -2961,18 +2966,18 @@ HTTP header (only works on HTTP/S protocols no other)
 - Supported by ALB and CLB
 - Supported headers: X-Forwarded-For, X-Forwarded-Proto, and X-Forwarded-Port headers.
 
-***** PROXY PROTOCOL
+***** Proxy Protocol
 - Works at Layer 4 (layer 4 tpc header)
 - Works with CLB (v1) and NLB (v2 - binary encoded)
 - End to end encryption, unbroken HTTPS (tcp listener)
-**** PRICING
+**** Pricing
 - Charged for each hour or partial hour that an Application Load Balancer is running and the number of Load Balancer Capacity Units (LCU) used per hour.
 - Charged for each hour or partial hour that a Network Load Balancer is running and the number of Load Balancer Capacity Units (LCU) used by Network Load Balancer per hour.
 - Charged for each hour or partial hour that a Gateway Load Balancer is running and the number of Gateway Load Balancer Capacity Units (GLCU) used by Gateway Load Balancer per hour.
 - Charged per VPC endpoint, AZ, and GB of data processed for the Gateway Load Balancer Endpoint.
 - Charged for each hour or partial hour that a Classic Load Balancer is running and for each GB of data transferred through your load balancer.
 
-** ROUTE 53
+** Route 53
 Highly available, global and scalable Domain Name System (DNS) web service used for domain registration, DNS routing, and health checking.
 
 - *IMPORTANT:* design to withstand DNS query floods.
@@ -2986,15 +2991,15 @@ Highly available, global and scalable Domain Name System (DNS) web service used 
 
 [[./img/route_53_role.png]]
 
-*** HOSTED ZONES TYPES
-**** PUBLIC
+*** Hosted Zones Types
+**** Public
 - DNS Database (zone file) hosted in 4 R53 Nameservers which use NS records to point to those NS.
 - Accessible from the public internet and VPCs.
 - Resource Records (RR) created withing the Hosted Zone
 
 [[./img/route_53_public_hosted_zones.png]]
 
-**** PRIVATE
+**** Private
 - *IMPORTANT:* Health checks can only be against failover, multivalue answer, weighted, latency, and, geolocation records.
   - Need public addressing, cannot be done on private IPs.
 - *IMPORTANT:* Compatible routing policies: simple, failover, multivalue answer, weighted, latency-based, and geolocation.
@@ -3007,7 +3012,7 @@ Highly available, global and scalable Domain Name System (DNS) web service used 
 
 [[./img/route_53_private_hosted_zones.png]]
 
-*** HEALTH CHECKS
+*** Health Checks
 Check specific resources, other health checks or the status of CW alarms by a global distributed network of computer.
 
 - *IMPORTANT:* HTTPS health checks don't validate SSL/TLS certificates, so checks don't fail if a certificate is invalid or expired.
@@ -3025,14 +3030,14 @@ Check specific resources, other health checks or the status of CW alarms by a gl
 - Need public addressing as they are coming from the public internet.
   - *IMPORTANT:* If they are used inside a VPC, CW alarms must be used.
 
-**** FAILOVER CONFIGURATIONS
+**** Failover Configurations
 - Active-Active Failover: all the records that have the same name, the same type, and the same routing policy are active unless Route 53 considers them unhealthy.
   - Use when all of the resources must be available the majority of the time.
 
 - Active-Passive Failover: use when a primary resource to be available the majority of the time and a secondary resource to be on standby in case all the primary resources become unavailable.
   - To create an active-passive failover configuration with one primary record and one secondary record, you just create the records and specify Failover for the routing policy.
 
-*** ROUTING POLICY TYPES
+*** Routing Policy Types
 - Simple Routing: route internet traffic to a single resource.
   - Can specify multiple values in the same record, such as multiple IP addresses.
   [[./img/route_53_simple_routing.png]]
@@ -3052,7 +3057,7 @@ Check specific resources, other health checks or the status of CW alarms by a gl
   [[./img/route_53_geoproximity_routing.png]]
 - IP-based Routing: route traffic based on your users' locations, and know where the IP address or traffic is coming from.
 
-*** RESOLVERS
+*** Resolvers
 Answers DNS queries for VPC domain names and performs recursive lookups against public name servers for all other domain names.
 
 - *IMPORTANT:* When forwarding queries from the R53 Resolver to AD servers, use forwarding rules.
@@ -3069,7 +3074,7 @@ Answers DNS queries for VPC domain names and performs recursive lookups against 
 - Route 53 Resolver DNS Firewall: managed firewall to block DNS queries made from known malicious domains and allow queries from trusted domains.
   - Achieved through the use of "blocklists" and "allowlists".
 
-*** SUPPORTED DNS RECORD TYPES
+*** Supported DNS Record Types
 - *IMPORTANT:* For EC2 instances, always use a Type A Record without an Alias. For ELB, CF, and S3, a Type A Record with an Alias, and finally, for RDS, always use the CNAME Record with no Alias.
 - *IMPORTANT:* To route domains to AWS services such as ELB, use always Alias records.
 
@@ -3087,42 +3092,42 @@ Answers DNS queries for VPC domain names and performs recursive lookups against 
 - SRV: represents priority, weight, port, and domain name.
 - TXT: contains text information for sources outside your domain.
 
-*** DNSSEC
+*** DNSSec
 Provides data origin authentication and data integrity verification for DNS.
 
 [[./img/route_53_dnssec.png]]
 
-* SECURITY & IDENTITY
-** IAM (IDENTITY ACCESS MANAGER)
+* Security & Identity
+** IAM (Identity Access Manager)
 Centralized control of authentication and authorization within AWS for all services. PCI-DSS compliant.
 
 - *IMPORTANT*: There is a hard max service quota of 5k users per account. If you need more, use a third-party identity provider.
 
-*** ENTITIES
+*** Entities
 - They are global for a given account across regions
 - By default, there is an implicit deny policy for everything
 - Principal is a entity allowed or denied access to AWS, can be a user, role, federated user, or an application.
 
-**** USER
+**** User
 Individual person or end user that interacts with AWS
 
 - Access Keys: long-term credentials used for iam users
 
-**** GROUPS
+**** Groups
 Collection of IAM Users with shared permissions. It is good practice to attach policies to groups and not to users as users can move around the organization. All users will inherit the policies of the group.
 
 - Cannot be referenced by ARNs in resource policies
 
-**** ROLES
+**** Roles
 Identity that can be assumed for temporary access to AWS credentials.
 
 - Used for delegation to users, apps, or services that do not normally have access to the AWS resources.
 - A user that assumes a role temporarily, gives up his own permissions and instead takes the permissions of the role.
 
-**** POLICIES
+**** Policies
 Documented rule set that are apply to grant or limit access. Attached to iam users, groups and policies.
 
-***** TYPES
+***** Types
 - Identity-based: attached to an IAM user, group, or role and specifies what that identity can do (its permissions)
 - Permission Boundaries: maximum permissions that the identity-based policies can grant to an entity (not for resource-based policies), but does not grant permissions (only limits).
 - Resource-based: attached to a resource (S3, SQS, KMS, etc.) and specifies what that resource can do
@@ -3131,19 +3136,19 @@ Documented rule set that are apply to grant or limit access. Attached to iam use
 - Access Control Lists: legacy policy (depreciated) from of limit aws resource access (example S3)
 - Session policies: policy associated to a STS when a role is assumed.
 
-***** POLICY EVALUATION LOGIC
+***** Policy Evaluation Logic
 - An explicit deny will always override an explicit allow
 
-****** SINGLE ACCOUNT
+****** Single Account
 
 [[./img/policy_evaluation_logic.png]]
 
-****** MULTIPLE ACCOUNTS (A -> B)
+****** Multiple Accounts (A -> B)
   If account A contains the identity policies and B the resource policy, then to be allowed, account B needs to be access from account A and account A needs to allow access to account B.
-***** IMPORTANT NOTES
+***** Important Notes
 - Use "aws:PrincipalOrgID" with the Org ID in a condition element, to allow only the principals in an Organization to the required resource-based policy
 - Use '"aws:ResourceTag/<Tag name>": "<Tag value>' in a "StringEquals" conditional statement to only allow specific tags
-***** COMMENT EXAMPLES :noexport:
+***** COMMENT Examples :noexport:
 - Allow S3 access from specific IPs to a specific bucket
   #+begin_src json
   {
@@ -3412,7 +3417,7 @@ Documented rule set that are apply to grant or limit access. Attached to iam use
   }
   #+end_src
 
-*** BEST PRACTICES
+*** Best Practices
 - Lock down the AWS root user
 - Follow the principle of least privilege
 - IAM can only be used to secure access to AWS account and resources.
@@ -3420,7 +3425,7 @@ Documented rule set that are apply to grant or limit access. Attached to iam use
 - Using identity providers (can be AWS IAM Identity Center) to provide a single source of identity
 - Regularly review and remove unused users, roles, and other credentials.
 
-*** STS (SECURITY TOKEN SERVICES)
+*** STS (Security Token Services)
 Generates temporary credentials for principals to access AWS resources.
 
 [[./img/aws_sts.png]]
@@ -3432,17 +3437,18 @@ Generates temporary credentials for principals to access AWS resources.
 - Revoking Temporary Credentials: create a policy with a conditional deny for the current time, so any identity has to renew their credentials
   [[./img/revoking_temporary_credentials.png]]
 
-**** ASSUME ROLE OPTIONS
+**** Assume Role Options
 - AssumeRole: assume a role from an existing AWS principal. Usually for your account or for cross-account access.
   - MFA can be included.
 
 - AssumeRoleWithSAML: assume a role with a SAML identity. Usually for enterprise identity store.
 - AssumeRoleWithWebIdentity: assume a role with a web identity.
 
-*** IAM ACCESS ANALYZER
+*** IAM Access Analyzer
 Identify unintended access to the resources in your organization and accounts (S3 or IAM roles) which are *shared with an external entity*.
 
 - *IMPORTANT:* If the organization is set up as a zone of trust, it will generate findings only for external accounts.
+- *IMPORTANT:* Use for validate policies, generate policies based on CloudTrail logs, and identify resources in the AWS account that are shared with an external entitiy.
 
 - External Access Analyzers: identify resources that are shared with an external entity.
 - Unused Access Analyzers: identify unused access.
@@ -3450,10 +3456,11 @@ Identify unintended access to the resources in your organization and accounts (S
 - Custom Policy Checks: validate IAM policies against your specified security standards.
 - Generate IAM policies based on access activity in your AWS CloudTrail logs.
 
-*** IAM IDENTITY CENTER (PREVIOUSLY SINGLE SIGN-ON)
+*** IAM Identity Center (Previously Single Sign-On)
 Access multiple AWS account with the same credentials used to manage AWS resources via the Console, API, or CLI.
 
 - *IMPORTANT:* To connect external AD: configure AD Connector in the Directory Service as a directory gateway to forward directory requests. Connect Identity Center to the AD by using the AD Connector.
+- *IMPORTANT:* Uses permissions sets which are provisioned to AWS accounts as IAM roles.
 
 - Flexible Identity Source
   - Built-in identity store
@@ -3490,7 +3497,7 @@ Is a policy document to restrict access that can be attached to a member account
 - Allow list: allow by default and state what is denied -> (keep the "FullAWSAccess policy")
 
 *** Best Practices
-- *IMPORTANT:* Set up a separate security account for looging, tooling, and audit-related activies.
+- *IMPORTANT:* Set up a separate security account for logging, tooling, and audit-related activies.
 
 - Root account to manage billing only with separate accounts used to deploy resources.
 - Use "Consolidated Billing" where the billing is payed by the management account also referred as "payer account".
@@ -3505,7 +3512,7 @@ Is a policy document to restrict access that can be attached to a member account
   + Consolidated billing: see combine view of charges incurred by all accounts and charges to the master account.
   + All features: consolidated billing features plus a set of advanced features such as SCP.
 
-** RAM (RESOURCE ACCESS MANAGER)
+** RAM (Resource Access Manager)
 Share AWS resources (not all are supported) between AWS accounts, AWS Organizations or AWS Organizational Units
 
 - *IMPORTANT*: VPCs cannot be shared with RAM, but you can share prefix list to imitate the share. Note you can share subnets also.
@@ -3573,7 +3580,7 @@ Federate users to AWS services using temporary credentials.
   4. GetOpenIdToken returns a new OAuth 2.0 token that is issued by your identity pool.
   5. You can then use the new token in an AssumeRoleWithWebIdentity request to retrieve AWS API credentials.
 
-** KMS (KEY MANAGEMENT SYSTEM)
+** KMS (Key Management System)
 Create, store and manage keys (symmetric and asymmetric), and also perform cryptographic operations (encrypt, decrypt, etc.)
 
 - *IMPORTANT:* Does not allow control over the CMK (customer managed key). For this use CloudHSM.
@@ -3586,7 +3593,7 @@ Create, store and manage keys (symmetric and asymmetric), and also perform crypt
 - KMS Keys support rotation, it stores the backing key and the previous keys
 
 
-*** ABAC (ATTRIBUTE-BASED ACCESS CONTROL)
+*** ABAC (Attribute-Based Access Control)
 Authorization strategy that defines permissions based on attributes.
 
 - KMS allows to control access to CMKs based on the tags and aliases associated with the KMS keys.
@@ -3616,7 +3623,7 @@ Authorization strategy that defines permissions based on attributes.
   }
   #+end_src
 
-*** EXTRA
+*** Extra
 - Aliases can be created to specify a KMS Key (but they are specify per region by default)
 
 - AWS managed CMKs support 3 years key rotation and cannot be created, changed, or disabled
@@ -3628,7 +3635,7 @@ Authorization strategy that defines permissions based on attributes.
 - Key Policy (resource policy type) which every key has one, can only be modified by the Principal owner of the key.
 - Deny by default, need to explicitly allow a specific account to be trusted.
 
-** DETECTIVE
+** Detective
 Automatically collect log data and uses ML, statistical analysis, and graph theory to build a linked set of data to easily conduct faster and more efficient security investigations.
 
 - *IMPORTANT:* Simplifies the process of investigating security findings and identifying the root cause.
@@ -3650,7 +3657,7 @@ Intelligent threat detection service that analyzes logs from CloudTrail, VPC Flo
   - Instance compromise: cryptocurrency mining, backdoor command and control activity, malware using domain generation algorithms, outbound DoS activity, unusually network traffic
   - Account compromise: API calls from an unusual geolocation or anonymizing proxy, attempts to disable AWS CloudTrail logging, changes that weaken the account password policy.
 
-** INSPECTOR
+** Inspector
 Automated security assessment service used to scan EC2 instances such as OS, containers, vulnerabilities (CVE), and deviations against best practices.
 
 - *IMPORTANT:* Uses IAM service-linked roles
@@ -3664,7 +3671,7 @@ Automated security assessment service used to scan EC2 instances such as OS, con
   - CIS Benchmarks Rule Package: checks against internet security
   - Security best practice Rule Package: best amazon best practices
 
-** MACIE
+** Macie
 Security service that uses machine learning to automatically discover, classify, and protect sensitive data in *S3 and CloudTrail event logs*.
 
 - *IMPORTANT:* Not used to identify security credentials or IAM access keys uploaded in a repo with commits, better use a custom Lambda function.
@@ -3688,7 +3695,7 @@ Security service that uses machine learning to automatically discover, classify,
 
 [[./img/amazon_s3_amazon_macie.png]]
 
-** ACM (CERTIFICATE MANAGER)
+** ACM (Certificate Manager)
 Manage certificates public or private (private CA needs to be trusted)
 
 - *IMPORTANT:* Regional service where certs cannot leave the region they are generated or imported
@@ -3699,7 +3706,7 @@ Manage certificates public or private (private CA needs to be trusted)
 
 [[./img/acm.png]]
 
-** CLOUDHSM
+** CloudHSM
 Computing device that enables to provision and manage a own single-tenant HSMs for the generation and use of encryption keys.
 
 - *IMPORTANT:* Used for encryption at rest that uses keys that are BOTH provided by AND controlled by the company.
@@ -3779,7 +3786,7 @@ Managed service to deploy network protections for VPCs.
 - Import previously created rules in common open source rule formats and enable integrations with managed intelligence feeds from AWS partners.
 - Create policies based on AWS Network Firewall rules and then apply those policies centrally across your VPCs and accounts.
 
-** PARAMETER STORE
+** Parameter Store
 Storage for configuration & parameters
 
 - Store plaintext and ciphertext (integration with KMS but need to have access)
@@ -3787,7 +3794,7 @@ Storage for configuration & parameters
 - Supports hierarchies & versioning
 - Can also store secrets but Secrets Manager is recommended.
 
-** SECRETS MANAGER
+** Secrets Manager
 Store, management, and rotation of secrets (passwords, api keys, etc).
 
 - Automatic rotation (uses lambda) and directly integrates with some AWS products (RDS)
@@ -3796,7 +3803,7 @@ Store, management, and rotation of secrets (passwords, api keys, etc).
 
 [[./img/secrets_manager.png]]
 
-** SECURITY HUB
+** Security Hub
 Comprehensive view of your security state within AWS and your compliance with security industry standards and best practices.
 
 - *IMPORTANT:* Only for monitoring and analyzing. It cannot interact or solve any issue.
@@ -3805,7 +3812,7 @@ Comprehensive view of your security state within AWS and your compliance with se
 - Aggregates, organizes, and prioritizes security alerts, or findings, across multiple accounts, partner tools, and services such as GuardDuty, Inspector, Macie, IAM Access Analyzer, Firewall Manager, AWS Audit Manager.
 - Supports multiple security standards: FSBP, CIS, PCI DSS, NIST.
 
-** SHIELD
+** Shield
 Managed DDoS protection service that safeguards applications running on AWS.
 
 - Protects from:
@@ -4494,6 +4501,9 @@ Fully managed Apache Kafka service to ingest and process streaming data in real-
 
 ** Quicksight
 Managed business analytics service to build visualizations, perform ad-hoc analysis, and quickly get business insights from their data, anytime, on any device.
+
+- *IMPORTANT:* It does not query directly from S3. It must either create a dataset or use Athena.
+- *IMPORTANT:* The smallest data refresh interval for SPICE is 15 min.
 
 - Provides ML Insights for discovering hidden trends and outliers, identify key business drivers, and perform powerful what-if analysis and forecasting.
 - Visualization, ad-hoc analysis
@@ -5355,13 +5365,13 @@ Scalable, cost-effective application recovery to AWS
   - Cloud to AWS
   - AWS Region to AWS Region
 
-* MACHINE LEARNING AND AI
-** A2I (AUGMENTED AI)
+* Machine Learning & AI
+** A2I (Augmented Ai)
 Service to easily integrate human reviews in a ML workflow.
 
 - Simplifies managing a large number of human reviewers at scale.
 - Direct integration with Textract and Rekognition.
-** LEX
+** Lex
 Backend services to provide text or voice conversational interface with pay as you go pricing.
 
 - Speech to text with Automatic speech recognition (ASR)
@@ -5369,7 +5379,7 @@ Backend services to provide text or voice conversational interface with pay as y
 - Uses deep learning to improve over time.
 - Used for chatbots, voice assistants, q&a bots, info/enterprise bots.
 
-** COMPREHEND
+** Comprehend
 Managed NLP service used to extract meaningful information from unstructured texts so you can analyze them in a human-like context.
 
 - You input a document (text) and the output are entities, phrases, language, PII, sentiments, etc.
@@ -5377,7 +5387,7 @@ Managed NLP service used to extract meaningful information from unstructured tex
 - Also offer medical insights with Comprenhend Medical.
 - Confidence score is between 0 and 100, indicating the probability that a given prediction is correct.
 
-** KENDRA
+** Kendra
 Highly scalable, intelligent enterprise search service.
 
 - Supports wide range of question types: factoid (who, what, where), descriptive, keyword (need to determine the intent)
@@ -5385,13 +5395,13 @@ Highly scalable, intelligent enterprise search service.
 - Can fine-tune search results based on content attributes, freshness, user behavior, and more.
 - Delivers ML-powered instant answers, FAQs, and document ranking as a fully managed service.
 
-*** COMPONENTS
+*** Components
 - Index: searchable data organized in a efficient way
 - Data source: where your data lives, and kendra indexes from this location. Can be S3, Confluence, Google Workspace, RDS, OneDrive, Salesforce, Kendra Web Crawler, Workdocs, FSX, etc.
   - It is synchronize with index based on a schedule
 - Documents: structured (faqs), unstructured (html, pdf, etc)
 
-** POLY
+** Poly
 Converts text into "life-like" speech
 
 - Takes text (language) -> speech (in the same language) no translation
@@ -5401,16 +5411,16 @@ Converts text into "life-like" speech
 - Standard TTS = concatenative (uses phonemes to build patterns of speech)
 - Neural TTS = phonemes -> spectograms -> vocoder -> audio (complex using AI, more human-natural speech)
 
-** BEDROCK
+** Bedrock
 Fully managed service that allows you to build and scale generative AI applications.
 
 - It is serverless.
-** ELASTIC INFERENCE
+** Elastic Inference
 Allows attaching low-cost GPU-powered inference acceleration to EC2 instances, SageMaker instances, or ECS tasks.
 
 - Reduce machine learning inference costs by up to 75%.
 
-** REKOGNITION
+** Rekognition
 Deep learning based image and video analysis
 
 - *IMPORTANT:* Can analyze live video streams with Kinesis Video Streams.
@@ -5419,7 +5429,7 @@ Deep learning based image and video analysis
 - Per image or per minute (video) pricing
 - Integrates with applications & event-driven
 
-** SAGEMAKER
+** Sagemaker
 Fully managed service that allows data scientists and developers to easily build, train, and deploy machine learning models at scale.
 
 - Can do fetch, clean, prepare, train evaluate, deploy, monitor/collect.
@@ -5430,7 +5440,7 @@ Fully managed service that allows data scientists and developers to easily build
 - Containers: docker containers deployed to ml ec2 instance (with ml environments)
 - Hosting: deploy endpoints for your models (serverless or always on running)
 
-** TEXTRACT
+** Textract
 Document analysis service for detecting and extracting information from scanned documents.
 
 - Analysis: relationship between text and metadata
@@ -5440,14 +5450,14 @@ Document analysis service for detecting and extracting information from scanned 
 - Input: jpeg, png, pdf, or tiff
 - Output: extracted text, structure and analysis
 
-** TRANSCRIBE
+** Transcribe
 - Automatic Speed Recognition (ASR) service
 
 - Input audio -> output text
 - Supports language customization, filters for privacy, audience-appropriate language, speaker identification
 - Also supports custom vocabularies and language models.
 
-** TRANSLATE
+** Translate
 Fluent translation with higher accuracy than traditional statistical and rule-based translation models
 
 - Translates text from native language to other languages (one word at a time).
@@ -5458,14 +5468,14 @@ Fluent translation with higher accuracy than traditional statistical and rule-ba
 
 - Attention mechanisms ensure the 'meaning' is translated
 
-** FORECAST
+** Forecast
 Forecasting for time-series data
 
 - Used for retail demand, supply chain, staffing, energy, server capacity, web traffic, etc.
 - Import historical & related data to understand what is normal
 - Output a forecast and forecast explainability (reasons for changes)
 
-** FRAUD DETECTOR
+** Fraud Detector
 Fully managed fraud detection service
 
 - It works by scoring events (by rules or decison logic) and allows you to react to the scored based on the business activity
@@ -5476,10 +5486,10 @@ Fully managed fraud detection service
   - Transaction Fraud: transactional history and identify suspect payments
   - Account Takeover: identify phishing or another social based attack
 
-** PERSONALIZE
+** Personalize
 Fully managed machine learning service for building recommendation systems.
-* OTHER
-** CONNECT
+* Other
+** Connect
 Contact center as a service, accept incoming and outgoing calls with no infrastructure
 
 - Omnichannel: voice and chat, incoming & outgoing
@@ -5488,7 +5498,7 @@ Contact center as a service, accept incoming and outgoing calls with no infrastr
 - Integrates with other AWS services (Lambda/LEX) for additional intelligence and features
 - Quick to privision, pay as you use pricing & scalable
 
-** WORKSPACES
+** Workspaces
 Desktop-As-A-Service (DAAS), home-working/office
 
 - Uses directory service (simple, AD, AD Connector) for authentication and user management.
@@ -5499,7 +5509,7 @@ Desktop-As-A-Service (DAAS), home-working/office
 
 [[./img/aws_workspaces.png]]
 
-** APPSTREAM 2.0
+** AppStream 2.0
 Secure, reliable, and scalable application streaming and low-cost virtual desktop service
 
 - *IMPORTANT:* Monthly fee per streaming user and stream resource required for provisioning.
@@ -5515,11 +5525,11 @@ Secure, reliable, and scalable application streaming and low-cost virtual deskto
   - Learning environments
   - 3D and engineering
 
-* METHODOLOGIES & AWS CONCEPTS
-** CAF (CLOUD ADOPTION FRAMEWORK)
+* Methodologies & AWS Concepts
+** CAF (Cloud Adoption Framework)
 Framework provided by AWS to assist you in adopting cloud computing for your enterprise infrastructure.
 
-*** CAPABILITIES
+*** Capabilities
 - Business: investments in the cloud propel your digital transformation goals and business results.
 - People: link between technology and business to help organizations quickly evolve into a culture of continuous growth and learning.
   It focuses on culture, organizational structure, leadership, and workforce.
@@ -5528,13 +5538,13 @@ Framework provided by AWS to assist you in adopting cloud computing for your ent
 - Security: confidentiality, integrity, and availability of data and cloud workloads.
 - Operations: deliver cloud services at a level that meets the business needs.
 
-*** BENEFITS
+*** Benefits
 - Risk Reduction: through improved reliability, increased performance, and enhanced security.
 - Improve environmental, social, and governance performance: use insights to improve sustainability and corporate transparency.
 - Revenue Growth: create new products and services, reach new customers, and enter new market segments.
 - Increased Operational Efficiency: reduce operating costs, increases productivity, and improves the employee and customer experience.
 
-*** PHASES
+*** Phases
 1. Envision: identifying and prioritizing transformation opportunities (with measurable outcomes) that align with strategic objectives.
 2. Align: capability gaps and cross-organizational dependencies are identified.
    - Helps to create strategies for improving cloud readiness, ensuring stakeholder alignment, and facilitating relevant organizational change management activities.
@@ -5543,41 +5553,41 @@ Framework provided by AWS to assist you in adopting cloud computing for your ent
    - Learning from pilots helps businesses adjust their approach before scaling to full production.
 4. Scale: pilots and business value are expanded to the desired scale. Business benefits associated with cloud investments are realized and sustained.
 
-** DESIGN PRICIPLES
-*** SCALABILITY
+** Design Priciples
+*** Scalability
 - Horizontally: an increase in the number of resources
 - Vertically: an increase in the specifications of an individual resource
 
-*** DISPOSABLE RESOURCES
+*** Disposable Resources
 - Instantiating compute resources: automate setting up of new resources along with their configuration and code.
 - Infrastructure as Code: make the whole infrastructure reusable, maintainable, extensible, and testable.
 
-*** AUTOMATION
+*** Automation
 - Serverless management and deployment: focus on automation of code deployment, AWS handles the management tasks.
 - Infrastructure management and deployment: AWS handles resource provisioning, load balancing, auto scaling, and monitoring.
 - Alarms and events: AWS services will continuously monitor your resources and initiate events when certain metrics or conditions are met.
 
-*** LOOSE COUPLING
+*** Loose Coupling
 - Well-defined interfaces: reduce interdependencies by allowing various components to interact with each other through agnostic interfaces (RESTful APIs).
 - Service discovery: services should be able to be consumed without prior knowledge of their network topology details.
 - Asynchronous integration: interacting components that do not need an immediate response.
 - Distributed systems best practices: handle component failure in a graceful manner.
 
-*** SERVICES, NOT SERVERS
+*** Services, Not Servers
 - Managed services: focus on building services for other applications.
 - Serverless Architectures: reduce the operational complexity of running applications with event-driven and synchronous services.
 
-*** DATABASES
+*** Databases
 - Relational databases: powerful query language, flexible indexing, strong integrity controls, and the ability to combine data from multiple tables in a fast and efficient manner.
 - NoSQL Databases: more flexible data model with horizontal scalability, but less query and transaction capabilities. Data models, including graphs, key-value pairs, and JSON documents.
 - Data warehouses: specialized type of relational database, optimized for analysis and reporting of large amounts of data.
 - Graph Databases uses graph structures for queries.
 
-*** MANAGING INCREASING VOLUMES OF DATA
+*** Managing Increasing Volumes Of Data
 - Data Lake: an architectural approach to store massive amounts of data in a central location.
   - Readily available to be categorized, processed, analyzed, and consumed by diverse groups within your organization.
 
-*** REMOVING SINGLE POINTS OF FAILURE
+*** Removing Single Points Of Failure
 - Detect failure: use health checks and collect logs.
 - Distributed resilience on different physical zones.
 
@@ -5595,37 +5605,37 @@ Framework provided by AWS to assist you in adopting cloud computing for your ent
   - Changes on the primary node are not immediately reflected on its replicas.
 - Quorum-based replication: combines synchronous and asynchronous replication by defining a minimum number of nodes that must participate in a successful write operation.
 
-*** OPTIMIZE FOR COST
+*** Optimize For Cost
 - Right sizing: use the correct size of the service for each application.
 - Elasticity: rapid scaling during high-traffic events.
 - Purchasing options: reserved instances vs spot instances.
 
-*** CACHING
+*** Caching
 - Application data caching: store and retrieve information from fast, managed in-memory caches.
 - Edge caching: serves content by infrastructure that is closer to viewers, which lowers latency and gives high, sustained data transfer rates.
 
-*** SECURITY
+*** Security
 - Defense in depth: secure multiple levels from network down to application and database.
 - Share security responsibility with AWS
 - Reduce privileged access: implement Least Privilege Principle.
 - Security as code: system and infrastructure hardening in templates that defines a Golden Environment.
 - Real-time auditing: continuous monitoring and automation of controls on AWS to minimize exposure to security risks.
 
-** DISASTER RECOVERY AND BUSINESS CONTINUITY
-*** TYPES OF DR
+** Disaster Recovery And Business Continuity
+*** Types Of DR
 Effective DR / BC costs money all of the time
 
 - RTO (Return Time Objective): time it takes after a disruption to restore.
 - RPO (Return Point Objective): amount of data loss measured in time it is acceptable to loose.
 
-**** BACKUP & RESTORE (ACTIVE / PASSIVE)
+**** Backup & Restore (Active / Passive)
 Back up data at the primary site to the secondary site.
 
 - AWS Backup can be used
 
 [[./img/disaster_recovery_types_backup_&_restore.png]]
 
-**** PILOT LIGHT (ACTIVE / PASSIVE)
+**** Pilot Light (Active / Passive)
 Preconfigure a separate environment with the core infrastructure installed (not running) and replicate the data.
 
 - Often used when plan for disasters is required but really likely to occur.
@@ -5637,20 +5647,20 @@ Preconfigure a separate environment with the core infrastructure installed (not 
 
 [[./img/disaster_recovery_types_pilot_light.png]]
 
-**** WARM STANDBY (ACTIVE / PASSIVE)
+**** Warm Standby (Active / Passive)
 - Small version replication of the primary site into the fully functional secondary.
 - When a disaster occurs, just scale up the instances to cope with the new load.
 
 [[./img/disaster_recovery_types_warm_standby.png]]
 
-**** MULTI SITE (ACTIVE / ACTIVE)
+**** Multi Site (Active / Active)
 - Multiple sites with the same infrastructure running
 - No recovery time as it load balances across both environments (HA and performance benefits)
 
 [[./img/disaster_recovery_types_active_active.png]]
 
-*** SERVICES
-**** STORAGE
+*** Services
+**** Storage
 - EBS replicates within a AZ
   - Failure to the AZ means failure of a volume -> create volume snapshots in S3
 - S3 replicated across 3+ AZs in a region (except for OneAZ classes).
@@ -5660,7 +5670,7 @@ Preconfigure a separate environment with the core infrastructure installed (not 
 
 [[./img/disaster_recovery_storage.png]]
 
-**** COMPUTE
+**** Compute
 - For EC2, use ASG on different AZs to provide regional resilience
 - ECS cluster run in EC2 mode, same as EC2
 - ECS in fargate mode can achieve similar characteristics as the ASG
@@ -5668,7 +5678,7 @@ Preconfigure a separate environment with the core infrastructure installed (not 
 
 [[./img/disaster_recovery_compute.png]]
 
-**** DATABASE
+**** Database
 - Database in EC2 have no resilience beyond snapshots.
 - DynamoDB is regionally resilient and even global if global tables is enabled.
 
@@ -5677,12 +5687,12 @@ Preconfigure a separate environment with the core infrastructure installed (not 
 - Aurora can have replicas in different AZs and the storage uses a cluster storage architecture (replicated across 3 AZs 6+ times) stronger than no aurora rds (regionally resilience)
 - Aurora global databases (secondary read only clusters can be promoted to primary) to make it globally resilient (take care writes only allowed in the primary region)
 
-**** NETWORKING
+**** Networking
 - VPC are regionally resilient (VPC router and IGW also).
 - By using ELB make subnets regionally resilient
 - Interface endpoint are AZ dependent
 
-** GLOBAL INFRASTRUCTURE
+** Global Infrastructure
 - Availability Zone consists of one or more data centers within 100 kilometers.
 - Region consists of multiple Availability Zones.
   - Every region has different compliance, latency, pricing, and service availability.
@@ -5699,8 +5709,8 @@ Preconfigure a separate environment with the core infrastructure installed (not 
 
   [[./img/aws_local_zones.png]]
 
-** WELL-ARCHITECTED FRAMEWORK PILLARS
-*** OPERATIONAL EXCELLENCE
+** Well-Architected Framework Pillars
+*** Operational Excellence
 Ability to run and monitor systems to deliver business value and to continually improve supporting processes and procedures.
 
 Best practice areas and tools:
@@ -5709,7 +5719,7 @@ Best practice areas and tools:
 - Operate: Amazon CloudWatch
 - Evolve: Amazon Elasticsearch Service
 
-*** SECURITY
+*** Security
 Ability to protect information, systems, and assets while delivering business value through risk assessments and mitigation strategies.
 
 Best practice areas and tools:
@@ -5720,7 +5730,7 @@ Best practice areas and tools:
 - Data protection: ELB, Amazon Elastic Block Store (Amazon EBS), Amazon S3, and Amazon Relational Database Service (Amazon RDS) encryption, Amazon Macie, AWS Key Management Service (AWS KMS)
 - Incident response: IAM, Amazon CloudWatch Events
 
-*** RELIABILITY
+*** Reliability
 Ability of a system to recover from infrastructure or service disruptions, dynamically acquire computing resources to meet demand, and mitigate disruptions such as misconfigurations or transient network issues.
 
 Best practice areas and tools:
@@ -5729,7 +5739,7 @@ Best practice areas and tools:
 - Failure Management: AWS CloudFormation, Amazon S3, AWS KMS, Amazon Glacier
 - Workload Architecture:  AWS SDK, AWS Lambda
 
-*** PERFORMANCE EFFICIENCY
+*** Performance Efficiency
 Ability to use computing resources efficiently to meet system requirements, and to maintain that efficiency as demand changes and technologies evolve.
 
 Best practice areas and tools:
@@ -5738,7 +5748,7 @@ Best practice areas and tools:
 - Monitoring: Amazon CloudWatch
 - Trade-offs: Amazon Elasticache, Amazon CloudFront, AWS Snowball, Amazon RDS read replicas.
 
-*** COST OPTIMIZATION
+*** Cost Optimization
 Ability to avoid or eliminate unneeded cost or sub optimal resources.
 
 Best practice areas and tools:
@@ -5748,7 +5758,7 @@ Best practice areas and tools:
 - Expenditure awareness: AWS Cost Explorer, AWS Budgets
 - Optimizing over time: AWS News Blog and the What’s New section on the AWS website, AWS Trusted Advisor
 
-*** SUSTAINABILITY
+*** Sustainability
 Ability to increase efficiency across all components of a workload by maximizing the benefits from the provisioned resources.
 
 Best practice areas and tools:
@@ -5759,7 +5769,7 @@ Best practice areas and tools:
 - Hardware patterns: Amazon EC2, AWS Elastic Beanstalk
 - Development and deployment process: AWS CloudFormation
 
-** SERVICE QUOTAS
+** Service Quotas
 Limit on the resources that an AWS account can use.
 
 - They can be extended though the Console or AWS Support.
@@ -5768,21 +5778,21 @@ Limit on the resources that an AWS account can use.
 
 - [[https://docs.aws.amazon.com/general/latest/gr/aws-service-information.html][Service endpoints and quotas]]
 
-* COMPARISON OF SERVICES
-** MIGRATIONS
-*** DATASYNC VS SNOWBALL/SNOWBALL EDGE
+* Comparison of Services
+** Migrations
+*** DataSync vs Snowball/Snowball Edge
 - DataSync for online data transfers.
 - Snowball/Snowball Edge for offline data transfers, for customers who are bandwidth constrained, or transferring data from remote or disconnected environments.
 
-*** DATASYNC VS AWS STORAGE GATEWAY FILE GATEWAY
+*** DataSync vS AWS Storage Gateway File Gateway
 -DataSync to migrate existing data to Amazon S3
 -File Gateway to retain access to the migrated data and for ongoing updates from your on-premises file-based applications.
 
-*** DATASYNC VS AMAZON S3 TRANSFER ACCELERATION
+*** DataSync vs Amazon S3 Transfer Acceleration
 -S3 if your applications are already integrated with it, and you want higher throughput for transferring large files to S3, with S3TA
 -DataSync if not.
 
-*** DATASYNC VS AWS TRANSFER FOR SFTP
+*** DataSync vs AWS Transfer for SFTP
 - Transfer Family if you currently use SFTP to exchange data with third parties.
 - DataSync if you want an accelerated and automated data transfer between NFS servers, SMB file shares, Amazon S3, Amazon EFS, and Amazon FSx.
 
@@ -5801,21 +5811,21 @@ Limit on the resources that an AWS account can use.
 ** DIFFERENCE BETWEEN A NAT INSTANCE AND A NAT GATEWAY WHEN HANDLING A TIMEOUT:
 NAT Instance - When there is a connection time out, a NAT instance sends a FIN packet to resources behind the NAT instance to close the connection.
 NAT Gateway - When there is a connection time out, a NAT gateway returns an RST packet to any resources behind the NAT gateway that attempt to continue the connection (it does not send a FIN packet)
-* INTERESTING POINTS
-** SSL OFFLOADING
+* Interesting Points
+** SSL Offloading
 - Use ACM to have a SSL cert and attach it to the ALB.
 - Use HTTP for the connection between the ALB and the EC2 instances.
 - That way it is easier and you don't have to provide a cert for every EC2 instance.
 
-** STATIC IPS
+** Static IPS
 - Use GlobalAcceleartor for multiple regions.
 - Use NLB in front of ALB for on region (cheapest).
-** DDOS MITIGATION WITHOUT AWS SHIELDS
+** DDoS Mitigation Without AWS Shields
 - Use CloudFront to distribute static resources and route dynamic resources to an Auto Scaling Group.
 - Use WAF with the ALB to route traffic to the ASG and protect it from common web exploits.
 - Use an ASG to scale for massive incoming of data.
 - Use CW alerts to scale the ASG and send alerts with "CPUUtilization" and "NetworkIn" metrics.
-* RESOURCES
+* Resources
 - [[https://tutorialsdojo.com/aws-cheat-sheets/][Tutorials Dojo AWS Cheat Sheets]]
 - [[https://learn.cantrill.io/p/aws-certified-solutions-architect-professional][Cantril Course - AWS Certified Solutions Architect Professional]]
 - [[https://docs.aws.amazon.com/][AWS Docs]]
