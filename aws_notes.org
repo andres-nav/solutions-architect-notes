@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID:       1432f147-ecf5-4849-bf97-f4af7a27459b
 :END:
-#+title:NOTES AWS SAP 02
+#+title:NOTES AWS
 
 *IMPORTANT:* Latest update <2024-02-16 Fri>. This notes might be not up to date. Check with AWS Docs.
 
