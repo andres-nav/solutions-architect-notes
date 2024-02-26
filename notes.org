@@ -5,32 +5,6 @@
 
 *IMPORTANT:* Latest update <2024-02-16 Fri>. This notes might be not up to date. Check with AWS Docs.
 
-* TO REVIEW :noexport:
-- Check data lifecycle policy vs aws backup
-- does batch fargate only use docker images or you can have custom amis?
-
-- Check attribute-based access control (ABAC) for keys
-- enhances authflow cognito
-- what is CloudEndure disaster recovery
-- Template constraints on Service Catalog
-
-- how to mount efs to ec2
-- do rds dbs have security groups?
-- convert standard queue to a fifo queue sqs?
-
-- RI isntances, all parameters must be the same
-- cost allocation tags must be enabled manually from the management account in billing and cost management?
-- can you do snapshots of instance stored volumes
-- App runner
-- scheduled query feature of timestreams
-- you can use aws budget to automate the application of scps
-- YOu can assign a custom prefix to a ein to add up to 15 ips
-- schedule kms keys and associated metadata for deletetion, with configurable waiting period from 7 to 30 days. You can cancel deletion during waiting period
-- Check datapipeline
-- what is aws proton
-- what is aws pinpoint
-- differences btw a iam service role and a normal iam role
-
 * Table of Contents :TOC
 * Compute
 ** EC2
@@ -188,6 +162,7 @@ Custom actions on instances during ASG actions (instance launch or instance term
   - Used for non time critical, or anything which can be rerun, bursty capacity needs, cost sensitive workloads, stateless.
 
 - Reserved: long term reserved instances with periods of 1 or 3 years.
+  - *IMPORTANT:* To use multiple RI, all the parameters must be the same (type, size, AZ, etc.).
   - Can be no upfront (some saving), all upfront (no per second free), partial upfront (reduced fee)
   - Used for services with known usage, consistent access to compute and required for a long term usage that cannot tolerate any interruption.
 
@@ -421,6 +396,7 @@ Place where a Batch job resides until it is scheduled onto a computing environme
 
 *** Compute Environment
 - Managed: Batch manages the capacity and instance types of the compute resources within the environment based on workload needs.
+  - Can be run on Fargate. Not recommended form workloads with more than 16vCPU, GPU, custom AMI.
   - Can choose to use On-Demand Instances or Spot Instances.
   - Instances are launched into the VPC and subnets that you specify (can be public or private).
     - Require VPC gateways.
@@ -2671,7 +2647,7 @@ CDN (content delivery network) service for content delivery with the best possib
   - The more things involved in caching, the less efficient the process is.
 
 *** Security
-- *IMPORTANT:* Cannot assign IAM rolesto a CF distribution.
+- *IMPORTANT:* Cannot assign IAM roles to a CF distribution.
 
 **** Origin Side
 - Origin Access Identity (OAI): only applicable for S3 (not Static Site Hosting)
@@ -3585,13 +3561,14 @@ Create, store and manage keys (symmetric and asymmetric), and also perform crypt
 
 - *IMPORTANT:* Does not allow control over the CMK (customer managed key). For this use CloudHSM.
 - *IMPORTANT:* If access is lost to the key, contact AWS Support.
+- *IMPORTANT:* KMS key deletion is irreversible. Deletion schedule can be enabled from 7 to 30 days.
+  - Can cancel deletion during this period.
 
 - Regional & Public Service
 - KMS Keys can be used to encrypt up to 4KB of data, and isolated to a region.
   - But can be replicated to other regions (multi-region)
 - Keys can be AWS owned, AWS managed, or Customer managed.
 - KMS Keys support rotation, it stores the backing key and the previous keys
-
 
 *** ABAC (Attribute-Based Access Control)
 Authorization strategy that defines permissions based on attributes.
@@ -3897,18 +3874,19 @@ Simplify risk management and compliance with regulations and industry standards.
 
 - Continuously audits AWS usage to assess risk and compliance with regulations and industry standards.
 
-* MANAGEMENT
-** MANAGED GRAFANA
+* Management
+** Managed Grafana
 Data visualization service for querying, correlating, and visualizing operational metrics, logs, and traces from multiple sources.
 
 - All logical Grafana server deployment, setup, scaling, and maintenance are handled by AWS.
-** MANAGED SERVICE FOR PROMETHEUS
+
+** Managed Service for Prometheus
 Managed monitoring service for container environments.
 
 - Integration with EKS, ECS and Distro for OpenTelemetry.
 - Use PromQL to obtain performance visibility using filter, aggregate, and alarm on metrics.
 
-** CONFIG
+** Config
 Fully managed service that provides you with an aws resource inventory, configuration history, and configuration change notifications to enable security and governance.
 
 - *IMPORTANT:* Does not prevent changes from happening, no protection. Not used for troubleshooting just assess, audit, and evaluate configurations.
@@ -3923,12 +3901,12 @@ Fully managed service that provides you with an aws resource inventory, configur
 
 [[./img/config.png]]
 
-** AUTO SCALING
+** Auto Scaling
 Provision capacity on demand base on thresholds and self-healing based on a launch template.
 
 - Configured in CloudWatch but it is dependent on ELB for elasticity.
 
-*** SCALING POLICIES
+*** Scaling Policies
 - Manual: adjusting the desired capacity manually.
 
 - Predictive: time base adjustment, used for known schedule.
@@ -3942,21 +3920,21 @@ Provision capacity on demand base on thresholds and self-healing based on a laun
 
   - *IMPORTANT:* To scale for sudden request (i.e. peak in sales) use scaling based on request count per target.
 
-*** HEALTH CHECKS
+*** Health Checks
 - EC2 (default): anything but the instance running is viewed as unhealthy
 - ELB (can be enabled): running and passing the ELB health check to be more precise (application awareness).
 - Custom: instances marked healthy or unhealthy by an external system.
 
 - Health check grace period (default 300s): delay before starting checking.
 
-** CONTROL TOWER
+** Control Tower
 Configuring and managing multi-account environment
 
 - Orchestrates other AWS services such as Organizations IAM Identity Center, CloudFormation, Config, etc.
 
 [[./img/aws_control_tower.png]]
 
-*** LADING ZONE
+*** Lading Zone
 Multi-account environment that is well-architected and adheres to security and compliance best practices.
 
 - Uses Organizations to manage accounts:
@@ -3968,7 +3946,7 @@ Multi-account environment that is well-architected and adheres to security and c
 - Monitoring and notifications with CloudWatch and SNS
 - End User account provisioning via Service Catalog
 
-*** GUARDRAILS
+*** GuardRails
 High-level rule or policy that governs the environment.
 
 - Behaviour:
@@ -3982,7 +3960,7 @@ High-level rule or policy that governs the environment.
   - Strongly recommended: enforce best practices.
   - Elective: for niche requirements
 
-*** ACCOUNT FACTORY
+*** Account Factory
 Automates and standardizes new account creation by account admins or end users (with appropriate permissions).
 
 - Shared accounts:
@@ -3990,7 +3968,7 @@ Automates and standardizes new account creation by account admins or end users (
   - Log Archive account: a repository for logs of API activities and resource configurations.
   - Audit account: a restricted account for security and compliance teams.
 
-*** DASHBOARD
+*** Dashboard
 Single page oversight of the entire environment
 
 ** CloudWatch
@@ -4100,7 +4078,7 @@ Log APIs calls/activities from AWS activities.
 - Data Events: provide info of resource operations performed on or in a resource (objects being uploaded to s3, or lambda invoked).
   - They come at an extra cost and must be enabled manually.
 
-** TRUSTED ADVISOR
+** Trusted Advisor
 Analyzes the AWS environment and provides best practice recommendations.
 
 - *IMPORTANT:* You are notified weekly by email with the recommendations.
@@ -4108,7 +4086,7 @@ Analyzes the AWS environment and provides best practice recommendations.
 - Provides cost optimization, performance, security, fault tolerance and service limits.
 - Free version with 7 core check with basic and developer support plans, anything beyond requires business or enterprise
 
-*** 7 FREE CORE CHECKS
+*** 7 Free Core Checks
 - S3 Bucket permissions, not objects
 - Security Groups specific ports unrestricted
 - IAM use
@@ -4117,13 +4095,13 @@ Analyzes the AWS environment and provides best practice recommendations.
 - RDS Public Snapshots
 - 50 service limit checks
 
-*** BUSINESS AND ENTERPRISE SUPPORT
+*** Business & Enterprise Support
 - 7 core checks and 115 further checks
 - Access via the AWS Support API
   - Useful for example to check service limits and logging a support ticket automatically for an increase
 - CloudWatch integration: react to changes
 
-** SYSTEM MANAGER
+** System Manager
 Centralize operational data from multiple AWS services and automate tasks across your AWS resources.
 
 - *IMPORTANT:* Use EC2Rescue tool to diagnose and troubleshoot problems with EC2 instances.
@@ -4134,13 +4112,13 @@ Centralize operational data from multiple AWS services and automate tasks across
 - Securely connect to EC2 even in private VPC via Session Manager.
 - Previously known as Simple Systems Manager.
 
-*** AGENT
+*** Agent
 - Systems Manager Endpoint is a Public service
 - Needs an agent installed on Windows or Linux AMIs.
 
 [[./img/systems_manager_agent.png]]
 
-*** RUN COMMAND
+*** Run Command
 Run commands documents on managed instances
 
 - *IMPORTANT:* AWS-RunPatchBaseline, apply patches from the patch manager for Linux and Windows instances
@@ -4154,7 +4132,7 @@ Run commands documents on managed instances
 
 [[./img/systems_manager_run_command.png]]
 
-*** PATCH MANAGER
+*** Patch Manager
 Apply patches to your managed infrastructure.
 
 - *IMPORTANT:* Linux: AWS-(OS)DefaultPatchBaseline, explicitly define patches
@@ -4170,7 +4148,7 @@ Apply patches to your managed infrastructure.
 
 [[./img/systems_manager_patch_manager.png]]
 
-** TAG EDITOR
+** Tag Editor
 Add tags to multiple, supported resources at once
 
 Best practices for tag names:
@@ -4178,7 +4156,7 @@ Best practices for tag names:
 - Use hyphens to separate words.
 - Use a prefix followed by a colon to identify the organization name or abbreviated name.
 
-** LICENCE MANAGER
+** Licence Manager
 Service for centrally managing software licenses across AWS and on-premises environments.
 
 Supports a variety of licensing models:
@@ -4187,11 +4165,11 @@ Supports a variety of licensing models:
 - Subscription: license with expiration date.
 - Usage-based license with specific terms based on usage.
 
-** BILLING & COST MANAGEMENT CONSOLE
+** Billing & Cost Management Console
 - Billing group: set of accounts within a consolidated billing family.
   - Primary Account can see the cost and usage across its billing group.
 
-*** COST EXPLORER
+*** Cost Explorer
 Default report to visualize the costs and usage of the *TOP FIVE* cost-accruing services and a detailed breakdown of all services in the table view.
 
 - View data for up to the last 12 months, forecast spend for the next three months and get recommendations on RIs.
@@ -4199,7 +4177,7 @@ Default report to visualize the costs and usage of the *TOP FIVE* cost-accruing 
 - In an org, enabling CE enables it for all accounts. You can’t grant or deny access individually.
 - Create forecasts that predict usage for a specific time range.
 
-**** COST ALLOCATION TAGS
+**** Cost Allocation Tags
 Provide additional information for billing reports
 
 - Need to be enable individually (per account for standard accounts or org master for orgs).
@@ -4210,8 +4188,11 @@ Types
 - AWS Generated: added to resources after they are enabled (i.e. aws:createdBy, aws:cloudformation:stack-name)
 - User Defined: (i.e. user:example)
 
-*** BUDGETS
+*** Budgets
 Set custom budgets for tracking spending and usage and *alert* when current or foretasted usage is exceeded via email and/or SNS.
+
+- *IMPORTANT:* Can use budgets to run actions when they are exceeded. They can be run automatically or after manual approval.
+  - Actions can be applying IAM policies or SCPs. Can target specific resources.
 
 - Updated up to three times a day.
 
@@ -4221,38 +4202,38 @@ Types of Budgets:
 - RI utilization budgets: define a utilization threshold and receive alerts when your RI usage falls below.
 - RI coverage budgets: define a coverage threshold and receive alerts when the number of your instance hours that are covered by RIs fall below that threshold.
 
-*** COST AND USAGE REPORTS
+*** Cost & Usage Reports
 CSV file or collection which provides information about your use of resources and estimated costs for that usage (stored in S3).
 
 - Track RI Utilization, charges, and allocations.
 - Time granularity: hourly daily, monthly
 - Can be automatically uploaded into Redshift and/or QuickSight for analysis.
 
-*** COST ANOMALY DETECTION
+*** Cost Anomaly Detection
 Feature that uses ML to detect and alert anomalous spend patterns.
 
 - Receive alerts in aggregated reports via email.
 - Cost data evaluated weekly, monthly, or in custom timeframes.
 
-*** BILLING CONDUCTOR
+*** Billing Conductor
 Feature that simplifies the billing and reporting process with customizable pricing and cost visibility.
 
 - Aggregated view of the monthly cost and usage data across the accounts.
 
-** COMPUTE OPTIMIZER
+** Compute Optimizer
 Recommends optimal AWS resources to reduce costs and improve performance of your workloads.
 
 - Uses ML to analyze historical utilization metrics to view findings and recommendations across regions and accounts.
 - Provides graphs for recent utilization metric, projected utilization for recommendations
 - Supported resources: EC2, ASG, EBS, Lambda, ECS on Fargate, commercial software licenses.
 
-*** ENHANCED INFRASTRUCTURE METRIC
+*** Enhanced Infrastructure Metric
 Paid feature for EC2 that extends the utilization metric analysis from 14 days to 93 days.
 
-*** INFERRED WORKLOAD TYPE
+*** Inferred Workload Type
 Identify the effort to migrate workloads from x86-based to Arm-based AWS Graviton instances types.
 
-*** DELEGATED ADMINISTRATOR
+*** Delegated Administrator
 Member account in the ORG as an administrator (max one per org)
 
 Capabilities:
@@ -4261,12 +4242,13 @@ Capabilities:
 - Set recommendation preferences
 - Set member account opt-in status
 
-*** EXPORTING RECOMMENDATIONS
+*** Exporting Recommendations
 - Individual CSVs for each resource type and regions.
 - Can be exported to S3
 - Can be done with the API endpoint of "Export<Resource>Recommendations", and to verify the final status of the export job use "DescribeRecommendationExportJobs".
-* ANALYTICS
-** ATHENA
+
+* Analytics
+** Athena
 Serverless service to analyze data directly in Amazon S3 and other data sources using SQL.
 
 - Schema-on-read (table like translation) that runs queries in _parallel_ (original data never changes).
@@ -4276,13 +4258,13 @@ Serverless service to analyze data directly in Amazon S3 and other data sources 
 
 [[./img/athena.png]]
 
-*** COST CONTROLS
+*** Cost Controls
 Can isolate queries for teams, apps, or different workloads to enforce cost controls.
 
 - Per-query limit: threshold for the total amount of data scanned per query.
 - Per-workgroup limit: limits the total amount of data scanned by all queries running within a specific time frame.
 
-*** PERFORMANCE TUNING TIPS
+*** Performance Tuning Tips
 From most important to least.
 
 - Partition your data on column values such as date, country, and region.
@@ -4291,7 +4273,7 @@ From most important to least.
 - Make files splittable (Apache Parquet and Apache ORC):
   - Only text files (TSV, CSV, JSON, and custom SerDes for text) compressed with BZIP2 and LZO are splittable.
 
-*** EXTRA
+*** Extra
 - Pay only on data consumed, ad-hoc queries on data
 
 - Used for:
@@ -4421,7 +4403,7 @@ Use cases:
 - Durably store media data for custom retention periods.
 - Build real-time and batch applications on data streams.
 
-** CLOUDSEARCH
+** CloudSearch
 Fully-managed service in the AWS Cloud to set up, manage, and scale a search solution for a website or app.
 
 - Can index and search both structured data and plain text.
@@ -4429,7 +4411,7 @@ Fully-managed service in the AWS Cloud to set up, manage, and scale a search sol
 - Uses language-specific text processing for full text search (34 languages for highlighting, autocomplete, and geospatial search)
 - Scaling for traffic (domain depth, more instances) or scaling for Data (domain width, bigger instances).
 
-** OPENSEARCH BEFORE ELASTICSEARCH (ES)
+** OpenSearch (before Elasticsearch (ES))
 Search and analytics engine to search, analyze, and visualize your data in *real-time*.
 
 - Managed implementation of OpenSearch (Previously ELK stack, ES (search and indexes), Kibana (visualization and dashboards) and Logstash (logs, needs agent installed))
@@ -4440,7 +4422,7 @@ Search and analytics engine to search, analyze, and visualize your data in *real
 
 [[./img/elasticsearch.png]]
 
-*** EXTRA
+*** Extra
 - Uses Amazon Cognito to offer username and password protection for Kibana.
 
 Used for:
@@ -4450,7 +4432,7 @@ Used for:
 - Security intelligence
 - Business analytics and operational intelligence
 
-** EMR (ELASTIC MAP REDUCER)
+** EMR (Elastic Map Reducer)
 Managed implementation of Apache Hadoop for handling big data workloads using Map Reduce Framework.
 
 - It also has other frameworks such as Spark, HBase, Presto, Flink, Hive, Pig, etc.
@@ -4459,7 +4441,7 @@ Managed implementation of Apache Hadoop for handling big data workloads using Ma
 
 [[./img/emr.png]]
 
-*** COMPONENTS
+*** Components
 - Clusters: collection of EC2 instances, can be transient or long-running.
 - Nodes: minimum unit of compute (EC2 instance)
 
@@ -4477,7 +4459,7 @@ Managed implementation of Apache Hadoop for handling big data workloads using Ma
 - Tasks nodes: run the tasks, ideal for *spot based scaling*.
   - Optional, no HDFS involvement or task trackers
 
-*** ARCHITECTURE
+*** Architecture
 - Storage: includes different file systems that are used with your cluster.
   - HDFS: distributed, scalable file system for Hadoop.
     - *Ephemeral storage*, useful for caching intermediate results or workloads with really high random I/O.
@@ -4527,7 +4509,7 @@ Managed business analytics service to build visualizations, perform ad-hoc analy
   + Security and governance
   + User authentication and management options
 
-** REDSHIFT
+** Redshift
 A fully managed, petabyte-scale data warehouse service used for long term analysis and trending.
 
 - *IMPORTANT:* To enable cross-region snapshot copy for an KMS-encrypted cluster, you must configure a *snapshot copy grant* for a master key in the destination region
@@ -4544,7 +4526,7 @@ A fully managed, petabyte-scale data warehouse service used for long term analys
 
 [[./img/redshift.png]]
 
-*** COMPONENTS
+*** Components
 - Cluster: a set of nodes, which consists of a leader node and one or more compute nodes.
   + Leader node: manager of the cluster and is where you access Redshift.
     - Used for query input, planning and aggregation.
@@ -4555,42 +4537,43 @@ A fully managed, petabyte-scale data warehouse service used for long term analys
 
 - Data is replicated to 1 additional node when written, for resilience to HW failure.
 
-*** ENHANCED VPC ROUTING
+*** Enhanced VPC Routing
 Use VPC features to manage the flow of data between your cluster and other resources.
 
 - Can also use VPC flow logs to monitor COPY and UNLOAD traffic.
 - By default, public routes are used, but with Enhanced VPC Routing you can use PrivateLink or VPC gateways.
 
-*** REDSHIFT SPECTRUM
+*** Redshift Spectrum
 Query data from s3 without the need to load or transform any data. Useful for large data sets
 
 - Supports Enhanced VPC Routing.
 - If data is stored in a columnar format, Redshift Spectrum scans only the columns needed by your query, rather than processing entire rows.
 - Data ca be compressed using one of Redshift Spectrum's supported compression algorithms, so less data is scanned.
 
-*** STREAMING INGESTION
+*** Streaming Ingestion
 Consume and process data directly from a streaming source to a Redshift cluster using SQL.
 
 - Eliminates the need for staging data in Amazon S3, which gives you a low-latency, high-speed ingestion.
 - Valid data source: Kinesis Data Streams and MSK
 
-*** REDSHIFT ML
+*** Redshift ML
 Train and deploy ML models using the data stored in a Redshift cluster through a simple CREATE MODEL SQL statement.
 
 - Make in-database local inferences using SQL, eliminating the need to move data between Redshift and other storage services like Amazon S3.
 - Uses Amazon SageMaker Autopilot behind the scenes to find the best model based on your input data.
 
-*** DATA SHARING
+*** Data Sharing
 Secure way to share live data across Redshift clusters within an AWS account, without the need to copy or move data.
 
 - Provides live access to the data so that users always see the most up-to-date and consistent information as it is updated in the data warehouse.
 - Can be used on Redshift RA3 clusters at no additional cost.
-*** CROSS-DATABASE QUERY
+
+*** Cross-Database Query
 Ability to query across databases in a Redshift cluster, regardless of which database you are connected to.
 
 - Available on Redshift RA3 node types at no additional cost.
 
-*** CLUSTER SNAPSHOTS
+*** Cluster Snapshots
 Point-in-time backups of a cluster stored in S3.
 
 - Cross region for global resilience.
@@ -4603,7 +4586,7 @@ Point-in-time backups of a cluster stored in S3.
 - Manual snapshots to S3 managed by the admin
   + Can be shared with other AWS accounts.
 
-** GLUE
+** Glue
 Fully managed service to extract, transform, and load (ETL) your data for analytics.
 
 - Consists of: Central metadata repository, ETL engine, flexible scheduler.
@@ -4621,7 +4604,7 @@ Fully managed service to extract, transform, and load (ETL) your data for analyt
 
 [[./img/glue.png]]
 
-*** DATA CATALOG
+*** Data Catalog
 Persistent metadata store about data sources
 
 - One catalog per region per account
@@ -4629,26 +4612,27 @@ Persistent metadata store about data sources
 - Can be used with Amazon Athena, Redshift Spectrum, EMR & AWS Lake Formation
 - They are created by configuring crawlers for data sources and giving them permission to publish data to data catalog
 
-*** DATABREW
+*** Databrew
 Visual data preparation tool for cleaning and normalizing data to prepare it for analytics and ML.
 
 - Over 250 pre-built transformations to automate data preparation tasks.
   + Automate filtering anomalies, converting data to standard formats, and correcting invalid values, and other tasks.
   + Auto-generate 40+ data quality statistics like column-level cardinality, numerical correlations, unique values, standard deviation, and other statistics.
 
-*** FLEX
+*** Flex
 Optimize costs on non-urgent or non-time sensitive data integration workloads.
 
 - Flex jobs run on spare compute capacity instead of dedicated hardware.
 
-*** DATA QUALITY
+*** Data Quality
 Measure and monitor the quality of your data for making good business decisions.
 
 - Built on top of the open-source DeeQu framework and provides a managed, serverless experience.
 
-*** RAY
+*** Ray
 Scale Python workloads using Ray, an open-source unified compute framework.
-*** PRICING
+
+*** Pricing
 - Hourly rate based on the number of DPUs used to run your ETL job.
 - Hourly rate based on the number of DPUs used to run your crawler.
 
@@ -4656,36 +4640,40 @@ Scale Python workloads using Ray, an open-source unified compute framework.
   + Charged per month if you store more than a million objects.
   + Charged per month if you exceed a million requests in a month.
 
-** LAKE FORMATION
+** Lake Formation
 Service for managing and building data lakes.
 
 - Stores and catalogs data from databases and object storage before transferring it to a new S3 data lake.
 - Use ML algorithms to clean and classify data and secure access to sensitive data with granular controls at the column, row, and cell levels.
 
-** DATA PIPELINE
+** Data Pipeline
 Managed ETL service for scheduling regular data movement and data processing activities in the AWS cloud.
 
 - Built-in activities for common actions such as copying data between Amazon Amazon S3 and Amazon RDS or running a query against Amazon S3 log data.
 - Supports JDBC, RDS, and Redshift databases.
 
-** DATA EXCHANGE
+** Data Exchange
 Search, subscribe to, and use third-party data in the cloud.
 
 - Central catalog where data providers may publish their data products, and data subscribers can search and subscribe to them.
-* DEVELOPMENT & DEPLOYMENT
-** TYPES OF DEPLOYMENTS
-*** BLUE/GREEN
+
+* Development & Deployment
+** Types Of Deployments
+*** Blue/Green
 Create a testing environment and route user to it, if everything works correctly, migrate all users to the green and if that continues delete the blue and make the green the primary.
 
 [[./img/cicd_blue_green_deployment.png]]
 
-*** ROLLING
+*** Rolling
 Slowly replaces previous versions of an application with new versions of an application by completely replacing the infrastructure on which the application is running.
-*** IN-PLACE
+
+*** In-Place
 Updates the application version without replacing any infrastructure components. The previous version of the application on each compute resource is stopped, the latest application is installed, and the new version of the application is started and validated.
-*** CANARY
+
+*** Canary
 Incrementally deploy the new version, making it visible to new users in a slow fashion. As you gain confidence in the deployment, you will deploy it to replace the current version in its entirety.
-** CODEPIPELINE
+
+** CodePipeline
 Fully managed continuous delivery service used to automate release pipelines for application and infrastructure updates.
 
 - Built from stages which can have sequential or parallel actions.
@@ -4696,7 +4684,7 @@ Fully managed continuous delivery service used to automate release pipelines for
 
 [[./img/codepipeline.png]]
 
-** CODEBUILD
+** CodeBuild
 Fully managed CI service that compiles source code, runs tests, and produces software packages that are ready to deploy.
 
 - Used for builds and tests.
@@ -4708,7 +4696,7 @@ Fully managed CI service that compiles source code, runs tests, and produces sof
 
 [[./img/codebuild.png]]
 
-*** BUILDSPEC.YAML
+*** Buildspec.yaml
 File where the build process is defined (root of the source).
 
 - Phases:
@@ -4719,7 +4707,7 @@ File where the build process is defined (root of the source).
 
 - Environment variables can be used through shell, variables, parameter-store, secrets-manager
 
-** CODEDEPLOY
+** CodeDeploy
 Fully managed deployment service that automates software deployments to EC2, Fargate, Lambda, and on-premises servers.
 
 - *IMPORTANT:* Protects app from downtime during deployments through rolling updates and deployment health tracking.
@@ -4729,7 +4717,7 @@ Fully managed deployment service that automates software deployments to EC2, Far
 - Deploys code not resources, can deliver code to EC2, On-premise, lambda functions, ECS
 - Nedd to install the CodeDeploy agent in the EC2 and on-premises instances.
 
-*** APPSPEC.YAML
+*** Appspec.yaml
 It is a YAML or JSON file which controls how deployments occur on the targets of that deployment.
 
 - Manages deployments = config + lifecycle event hooks
@@ -4739,22 +4727,23 @@ It is a YAML or JSON file which controls how deployments occur on the targets of
   - Resources: only for ECS and Lambda
 - Lifecycle event hooks: ApplicationStop, DownloadBundle, BeforeInstall, Install, AfterInstall, ApplicationStart, ValidateService
 
-** CODECOMMIT
+** CodeCommit
 Fully-managed source control service that hosts secure Git-based repositories
 
 - Stores repositories in S3 and DynamoDB.
-** CLOUDFORMATION
+
+** CloudFormation
 Service to create a collection of related AWS resources and provision them in an orderly and predictable fashion.
 
 - Rollback Triggers: specify alarms and if they are breached, CF rolls back the entire stack operation to a previously deployed state.
 - Template: YAML or JSON document that contains logical resources (what)
 
-*** STACKS
+*** Stacks
 Group of resources that share the same lifecycle (limit of 500 resources per stack)
 
 - Designed isolated by default; can't easily reuse resources or reference other stacks
 
-**** NESTED STACKS
+**** Nested Stacks
 Stacks created as part of other stacks defined by "AWS::CloudFormation::Stack".
 
 - *IMPORTANT*: Use ONLY when stacks form part of one solution (life-cycle linked).
@@ -4764,32 +4753,32 @@ Stacks created as part of other stacks defined by "AWS::CloudFormation::Stack".
 - Root Stack: top-level stack to which all the nested stacks ultimately belong.
 - Parent Stack: higher level stack in the stack hierarchy.
 
-**** CROSS-STACK REFERENCES
+**** Cross-Stack References
 Export values from one stack and use them in another (use "FN::ImportValue" to reference exports).
 
 - *IMPORTANT*: Exports must have a unique name in the region
 - *IMPROTANT*: Use for service oriented where they have different life-cycles and you want to reuse stacks.
 
-**** STACK SETS
+**** Stack Sets
 Deploy CFN stacks *across many accounts & regions*.
 
 - They are containers in an admin account that contain stack instances which reference other stacks.
 - Permissions are granted via self-managed IAM Roles or service-managed within an ORG.
 - Used for enabling AWS config, config rules, iam roles in multiple accounts or deployments on multiple accounts and regions.
 
-**** STACK ROLES
+**** Stack Roles
 Allows CFN to assume a role to be able to interact with AWS to create, delete, update resources.
 
 - *IMPORTANT*: the identity creating the stack does not need to have resource permissions only "PassRole".
 - Used for role separation
 
-**** CHANGE SETS
+**** Change Sets
 Preview changes between different versions of a stack
 
 - Chosen changes can be applied by executing the change set.
 - More control and visibility over changes of a stack.
 
-**** EXTRA
+**** Extra
 - Configurations:
   - Concurrent Accounts: number of accounts that can be deployed at any time
   - Failure tolerance: amount of resource that can fail before the Stack Set fails
@@ -4799,20 +4788,21 @@ Preview changes between different versions of a stack
   - Self-Managed: users have to select the specific AWS accounts in specific regions manually
   - Service-Managed: can be deployed to all accounts managed by AWS organizations in specific regions
 
-*** DELETION POLICY
+*** Deletion Policy
 Action that CFN takes for the physical resource when the logical resource is deleted
 
 - *IMPORTANT*: Only applies to delete not replace (with replace the data will be lost)
 - Options: delete (default), retain or if supported snapshots (EBS, ElastiCache, Neptune, RDS, Redshift)
   - Snapshots must be manually deleted
 
-*** CUSTOM RESOURCES
+*** Custom Resources
 Integrate with anything CF doesn't yet or does not natively support
 
 - Passes and get data from custom resources.
 - Lambda can be used to add additional steps.
-*** PARAMETERS
-**** TEMPLATE PARAMETERS
+
+*** Parameters
+**** Template Parameters
 Allow external sources (console/CLI/API) to accept inputs when a stack is created or  updated
 
 - They can be reference from within logical resources to influence physical resources and/or configuration
@@ -4820,11 +4810,11 @@ Allow external sources (console/CLI/API) to accept inputs when a stack is create
 - They need to be defined in the parameter section
 - Whenever possible use defaults
 
-**** PSEUDO PARAMETERS
+**** Pseudo Parameters
 - They are injected parameters from AWS which do not have to be defined in the parameter section (example AWS::Region, AWS::StackId, AWS::StackName, AWS::AccountId)
 - Provided by AWS based on the environment when creating the stack
 
-*** INTRINSIC FUNCTIONS
+*** Intrinsic Functions
 Allow access to data and runtime and take action based on how things are based on templates when the stack is being created
 
 - *IMPORTANT:* Can be used only in specific parts of a template such as resource properties, outputs, metadata attributes and update policy attributes.
@@ -4839,16 +4829,20 @@ Allow access to data and runtime and take action based on how things are based o
 - Fn:GetAZs: from a specific region returns a list of AZs on a explicit region or the current region if blank
   - If you have a default VPC, it will return the AZ where the default VPC has subnets in
 - Fn::Select: returns an object from a lists of objects given an index (it starts at 0) (!Select [0, !GetAz ''])
+
 **** Fn::Join and Fn::Split
 - Fn::Split: given a delimiter it splits a string into a list (!Split ["|", "roffle|truffles|penny"])
 - Fn::Join: given a delimiter and a list of values, it joins the list into a string with the delimiter (!Join ["|", ["value1", "value2"]])
+
 **** Fn::Base64 and Fn::Sub
 - Fn::Base64: given plain text, it encodes it to base64 (Fn::Base64: "data")
 - Fn::Sub: substitutes variable in the input to their actual runtime values (!Sub "hello ${Instance2.InstanceId}")
   - Cannot do self references as the physical resource is not created yet
+
 **** Fn::Cidr
 - Function to create and reference cidr ranges for subnets, it returns an list with all the available cidr ranges (!Select [ "0", !Cidr [ !GetAttr VPC.CidrBlock, "16, "12" ]])
-*** MAPPINGS
+
+*** Mappings
 Maps keys to values allowing lookup, used to improve template portability
 
 - They can have on key, or Top & Second level mappings
@@ -4856,24 +4850,26 @@ Maps keys to values allowing lookup, used to improve template portability
 
 [[./img/cloudformation_mappings.png]]
 
-*** OUTPUTS
+*** Outputs
 Provides status information to access services created by the stack (when stack is in CreateComplete state) and are optional on templates
 
 - Useful as they are accessible to the parent stack when using nesting
 - Can be exported allowing cross-stack references
 
-*** CONDITIONS
+*** Conditions
 Evaluated to true or false, and are processed before resources are created
 
 - Declared in the optional 'Condition' section
 - They use intrinsic functions (and, equals, if, not, or) and are associated to logical resource to control if they are created or not
-*** DEPENDSON
+
+*** DependsOn
 - Lets you explicitly define the dependencies of the resources
   - On creation, the resource that depends on the other waits for it parent to be created
   - On deletion, the resource that depends on the other is deleted first and then the parent
 - Elastic IPs requries a IGW attached to a VPC to work but as no there is no implicit dependency then we need to add a DependsOn for the IGW attachment
 - You can link explicit dependencies in single resources or a list of resources
-*** WAIT CONDITIONS & CFN-SIGNAL
+
+*** Wait Conditions & Cfn-Signal
 - Configure CFN to wait for 'X' number of success signals or a timeout for the signals (max 12h)
   - If success signals received -> CREATE_COMPLETE
   - If failure signals or timeout -> CREATE_FAILS
@@ -4884,7 +4880,8 @@ Evaluated to true or false, and are processed before resources are created
 [[./img/cloudformation_creation_policy.png]]
 
 [[./img/cloudformation_wait_conditions.png]]
-*** CFN-INIT
+
+*** Cfn-Init
 - Simple configuration management system
 - Configuration directive are stored in the template
 - AWS::CloudFromation::Init part of the logical resource
@@ -4892,12 +4889,12 @@ Evaluated to true or false, and are processed before resources are created
 - It is only run at the creating of the instance
 
 [[./img/cloudformation_cfn-init.png]]
-*** CFN-HUP
+*** Cfn-Hup
 - Daemon detects changes in resource metadata and running configurable actions when a changes is detected
 - Use to run again the configuration when you update the stack
 
 [[./img/cloudformation_cfn-hup.png]]
-** OPSWORKS
+** OpsWorks
 Configuration management service to configure and operate applications in a cloud enterprise by using *Puppet or Chef*.
 
 - *IMPORTANT:* Use mainly when you already have a Puppet or Chef skills or services, or you require to automate
@@ -4912,19 +4909,22 @@ Configuration management service to configure and operate applications in a clou
 
 [[./img/opsworks.png]]
 
-** SERVICE CATALOG
+** Service Catalog
 Create, manage, and distribute catalogs of approved products to end-users, who can then access the products they need in a personalized portal.
 
 - Regional service.
 - Defines approval of provisioning from IT and Customer side.
 - Services defined by CF templates, configure constraints, and manage IAM roles to provide for advanced resource management.
-- Admins define the products and the permissions required to launch them
-- Products are group up into portfolios
-- Uses S3 buckets and DynamoDB databases that are encrypted at rest using Amazon-managed keys.
+- Can apply constraints to templates.
 
 [[./img/service_catalog.png]]
 
-** X-RAY
+*** Extra
+- Uses S3 buckets and DynamoDB databases that are encrypted at rest using Amazon-managed keys.
+- Products are group up into portfolios
+- Admins define the products and the permissions required to launch them
+
+** X-Ray
 Analyzes and debugs production, distributed applications, and microservices architecture.
 
 - Identify performance bottlenecks, edge case errors, and other hard to detect issues.
@@ -4932,14 +4932,14 @@ Analyzes and debugs production, distributed applications, and microservices arch
 
 [[./img/aws_x-ray.png]]
 
-*** COMPONENTS
+*** Components
 - Tracing Header: add unique id (trace id) at the creating of the session. Use to track a request though your distributed app
 - Segments: data sent from the supported services to X-RAY. they are data blocks with (host/ip, request, response, work done (time), issues)
 - Subsegments: more granular version of segments, calls to other servies as port of a segments (endpoints, etc)
 - Service Graph: json document detailing services and resources with make up your application
 - Service Map: visual version of the service graph showing traces
 
-*** DATA HANDLING
+*** Data Handling
 For different services there are agents to attach AWS X-Ray.
 
 - *IMPORTANT:* All of them require IAM permissions.
@@ -4951,7 +4951,7 @@ For different services there are agents to attach AWS X-Ray.
 - API Gateway: per stage option
 - SNS & SQS
 
-** APP RUNNER
+** App Runner
 Deploy web applications and APIs.
 
 - *IMPORTANT:* Used to deploy container images directly, it manages everything from networking, scaling, load balancing, etc.
@@ -4968,12 +4968,13 @@ Open-source software development framework for defining cloud infrastructure in 
 - Higher-level abstraction: allows developers to express the infrastructure more naturally and intuitively using their preferred programming languages.
 - Can be integrated with CodePipeline, CodeBuild, and CodeDeploy for CI/CD.
 
-** PROTON
+** Proton
 Managed delivery service for deploying container and serverless applications.
 
 - Uses templates to define and maintain standard application stacks, which include the architecture, infrastructure resources, and the CI/CD pipeline.
-* APPLICATION SERVICES
-** SNS (SIMPLE NOTIFICATION SERVICE)
+
+* Application Services
+** SNS (Simple Notification Service)
 Set up, operate, and send notifications from the cloud using a pub-sub messaging paradigm.
 
 - Public, regional, and HA services
@@ -4983,7 +4984,7 @@ Set up, operate, and send notifications from the cloud using a pub-sub messaging
 
 [[./img/sns.png]]
 
-*** CHARACTERISTICS
+*** Characteristics
 - SNS Topic: base entity of SNS where permissions and configurations are defined
 - Publisher: sends messages into a topic
 - Subscribers: messages from topics are deliver to the subscribers
@@ -4994,7 +4995,7 @@ Set up, operate, and send notifications from the cloud using a pub-sub messaging
   - Provides asynchronous event notifications for parallel processing.
 - SNS mobile notifications: fanout mobile push notifications to multiple devices.
 
-** SQS (SIMPLE QUEUE SERVICE)
+** SQS (Simple Queue Service)
 Hosted queue that lets you integrate and decouple distributed software systems and components.
 
 - *IMPORTANT:* Send, receive, or delete messages in batches of up to 10 messages or 256KB.
@@ -5012,7 +5013,9 @@ Hosted queue that lets you integrate and decouple distributed software systems a
   + Long polling helps reduce the cost by eliminating the number of empty responses and false empty responses.
     - It doesn't return a response until a message arrives in the message queue, or the long poll times out.
 
-*** TYPES
+*** Types
+- *IMPORTANT:* Cannot change the type of the queue.
+
 - Standard Queues (default): makes a best effort to preserve the order of messages.
   + Consumes messages using short polling (default)
   + At-least-Once delivery, there can be an occasion that more than one copy of a message
@@ -5026,13 +5029,13 @@ Hosted queue that lets you integrate and decouple distributed software systems a
 
 [[./img/sqs_types.png]]
 
-*** EXTENDED CLIENT LIBRARY
+*** Extended Client Library
 Handling messages over SQS larger than 256KB storing information in S3.
 
 - It is a JAVA based application.
 - When a message is deleted, the payload is also deleted from S3.
 
-*** VISIBILITY TIMEOUT
+*** Visibility Timeout
 Messages are hidden (VisibilityTimout) seconds when a receiver gets the message
 - If the receiver processes the message it can delete it from the queue.
 - If nothing appends, the messages reappears (to be reprocessed).
@@ -5043,10 +5046,10 @@ Messages are hidden (VisibilityTimout) seconds when a receiver gets the message
 
 [[./img/sqs_visibility_timeout.png]]
 
-*** MESSAGE TIMERS
+*** Message Timers
 Message timers let you specify an initial invisibility period for a message added to a queue.
 
-- *IMPORTANT:* Not supported in FIFO queues.
+- *IMPORTANT:* Not supported in FIFO queues, they only support Delay Queues.
 - *IMPORTANT:* Used to create Delay Queues, where the message timer influences the whole queue.
 
 - The default (minimum) invisibility period for a message is 0 seconds. The maximum is 15 minutes.
@@ -5054,7 +5057,7 @@ Message timers let you specify an initial invisibility period for a message adde
 
 [[./img/sqs_delay_queues.png]]
 
-*** DEAD-LETTER QUEUES
+*** Dead-Letter Queues
 Set aside and isolate messages that can't be processed correctly to determine why their processing didn't succeed.
 
 - *IMPORTANT:* If maxReceiveCount = 1, any problem loading the message will result in the message being moved to the dead-letter queue. Better to increase it.
@@ -5069,7 +5072,7 @@ Set aside and isolate messages that can't be processed correctly to determine wh
 
 [[./img/sqs_dead_letters_queues.png]]
 
-*** PRICING
+*** Pricing
 - Charged per 1 million SQS requests. The price depends on the type of queue being used. Requests include:
   - API Actions
   - FIFO Requests
@@ -5083,7 +5086,8 @@ Set aside and isolate messages that can't be processed correctly to determine wh
 Cost-effective and scalable email service that enables you to send mail from within any application.
 
 - Regional service.
-** STEP FUNCTIONS
+
+** Step Functions
 Aerverless orchestration for modern applications.
 
 - *IMPORTANT:* Cannot trigger a Step Function from an S3 event directly.
@@ -5092,7 +5096,7 @@ Aerverless orchestration for modern applications.
 - State machine updates are eventually consistent.
 - IAM Roles are used for permissions
 
-*** TYPES OF STATES
+*** Types of States
   - Succeed & Fail states
   - Wait states: wait x sec or for a specific event
   - Choice: allows the state machine to take different routes based on the input
@@ -5100,7 +5104,7 @@ Aerverless orchestration for modern applications.
   - Map: accepts a lists and for each item performs an action
   - Task: single unit of work (lambda, batch, dynamodb, ecs, sns, sqs, glue, sagemaker, emr, step functions)
 
-*** WORKFLOW TYPES
+*** Workflow Types
   - Standard (default): for long-running business processes that require durable state storage.
     - Maximum duration of 1 year
     - Suited for non-idempotent workflows such as payment processing or starting an EMR cluster
@@ -5116,7 +5120,7 @@ Aerverless orchestration for modern applications.
     - Syncrhonous
       - Suited for tasks for at-most-once workflow
 
-** SWF (SIMPLE WORKFLOW SERVICE)
+** SWF (Simple Workflow Service)
 Legacy fully-managed state tracker and task coordinator in the Cloud.
 
 - *IMPORTANNT:* It uses the AWS Flow Framework (to define workflows only supported by SWF)
@@ -5133,14 +5137,14 @@ Legacy fully-managed state tracker and task coordinator in the Cloud.
 
 [[./img/swf.png]]
 
-** APPSYNC
+** AppSync
 Connect apps to data and events with secure, serverless, and performant *GraphQL* and Pub/Sub APIs.
 
 - Access data from multiple sources with a single request. Instantly create APIs for your databases. Combine APIs into a single Merged API.
 - Create engaging real-time experiences by publishing data from any event source to subscribed clients through serverless WebSockets.
 - Built-in security, monitoring, logging, and tracing. Optional caching for low latency.
 
-** PINPOINT
+** Pinpoint
 Engage with your customers through SMS, push notifications, in-app messaging, and email.
 
 - Push notifications: with Firebase Cloud Messaging (FCM), Apple Push Notification Service (APNs), Baidu Cloud Push, and Amazon Device Messaging (ADM).
@@ -5159,14 +5163,14 @@ Managed open source message broker based on Apache ActiveMQ. It also support Rab
 
 [[./img/amazon_mq.png]]
 
-** MECHANICAL TURK
+** Mechanical Turk
 Managed human task outsourcing API to extend your app with humans
 
 - Requesters post Human Intelligence Tasks (HITs), where workers earn by completing HITs.
 - Pay per task for tasks better suited to humans rather than ML.
 - You can set qualifications (worker attributes) which can require a test to complete HITs.
 
-** ELEMENTAL MEDIALIVE
+** Elemental MediaLive
 Encode live video for broadcast and streaming to any device
 
 - *IMPORTANT:* Suitable to stream a live video to many users.
@@ -5176,7 +5180,7 @@ Encode live video for broadcast and streaming to any device
 - Manage resources across multiple Availability Zones, and detect and resolve issues without disrupting live channels.
 - Avoid upfront investment in encoding infrastructure, only paying for the service as you use it.
 
-** MC (ELEMENTAL MEDIACONVERT)
+** MC (Elemental MediaConvert)
 File-based serverless video transcoding services and media processing.
 
 - Replacement of Elastic Transcoder.
@@ -5190,7 +5194,7 @@ File-based serverless video transcoding services and media processing.
 
 [[./img/mediaconvert.png]]
 
-** IOT
+** IoT
 Managed cloud service that connects IoT devices to other devices and AWS cloud services easily.
 
 - IoT Gateway is a HA and resilient service which functions as the endpoint for all of the iot devices.
@@ -5204,7 +5208,7 @@ Managed cloud service that connects IoT devices to other devices and AWS cloud s
 
 [[./img/iot_services.png]]
 
-*** IOT DEVICE MANAGEMENT
+*** IOT Device Management
 Register, organize, monitor, and remotely manage connected devices at scale.
 
 - Swiftly onboard and organize your devices into flexible hierarchies to streamline fleet maintenance and workflow updates.
@@ -5212,7 +5216,7 @@ Register, organize, monitor, and remotely manage connected devices at scale.
 - Securely and remotely monitor your device fleet health status, analyze trends, troubleshoot, and push updates at scale.
 - Visualize your fleet’s health status and remotely perform real-time actions, such as firmware updates and device reboots, using Fleet Hub.
 
-*** IOT DEVICE DEFENDER
+*** IOT Device Defender
 Fully managed IoT security service to secure your IoT configurations on an ongoing basis.
 
 - Audit the security posture of IoT resources across your device fleet to easily identify gaps and vulnerabilities.
@@ -5220,25 +5224,25 @@ Fully managed IoT security service to secure your IoT configurations on an ongoi
 - Get security alerts when an audit fails or behavior anomalies are detected. Quickly take actions to minimize operational risk.
 - Easily mitigate security issues through built-in actions such as updating a device certificate, quarantining a group of devices, or replacing default policies.
 
-*** IOT DEVICE SDK
+*** IOT Device SDK
 Easily and quickly connect your hardware device or mobile application to AWS IoT Core.
 
 - Helps connect, authenticate, and exchange messages with AWS IoT Core using the MQTT, HTTP, or WebSockets protocols.
 
-*** IOT 1-CLICK
+*** IOT 1-Click
 Launch lambda functions from the ready-to-use simple IoT device.
 
 - You can also managa this devices from mobile apps or from the console.
 
-*** IOT SITEWISE
+*** IOT Sitewise
 Collect, organize, and analyze data from industrial equipment at scale
 
 - *IMPORTANT:* Plugin for Grafana to visualize near real-time equipment data.
 
-*** FLEETWISE
+*** FleetWise
 Efficiently collect vehicle data and organize it in the cloud so you can use the data to improve vehicle quality, performance, and autonomy.
 
-*** GREENGRASS
+*** Greengrass
 Move the AWS services to the edge. Run Lambda function, S3 buckets on your IoT devices.
 
 - Services such as (compute, messaging, data management, sync and ML) can be moved to the edge devices
@@ -5246,13 +5250,13 @@ Move the AWS services to the edge. Run Lambda function, S3 buckets on your IoT d
 
 [[./img/greengrass.png]]
 
-** APPFLOW
+** AppFlow
 Integration service that automates data flows by securely integrating third-party applications and AWS services without writing any code.
 
 - Run flows on-demand or on a schedule to keep data in sync across SaaS applications and AWS services
 - Aggregate data from multiple sources to train analytics tools more effectively and save money.
 
-** DEVICE FARM
+** Device Farm
 Test and interact with your Android, iOS, and web apps on real, physical devices
 
 - Use built in or supported automated testing frameworks.
@@ -5261,7 +5265,7 @@ Test and interact with your Android, iOS, and web apps on real, physical devices
 
 [[./img/device_farm.png]]
 
-** AMPLIFY
+** Amplify
 Build full-stack web and mobile apps in hours. Easy to start, easy to scale.
 
 - Amplify Hosting: fully managed CI/CD and hosting service for single-page applications (SPA), using AWS S3 and AWS CloudFront to deliver content to users around the world.
@@ -5796,7 +5800,7 @@ Limit on the resources that an AWS account can use.
 - Transfer Family if you currently use SFTP to exchange data with third parties.
 - DataSync if you want an accelerated and automated data transfer between NFS servers, SMB file shares, Amazon S3, Amazon EFS, and Amazon FSx.
 
-** COMPARING INSTANCE STORE AND EBS
+** Comparing Instance Store & EBS
 - Persistence, Resilience, isolated from instance lifecycle -> EBS
 - Super high performance, cost -> Instance Store
 
@@ -5808,7 +5812,7 @@ Limit on the resources that an AWS account can use.
 - 256k IOPS -> IO2 Block Express
 - 260k IOPS -> RAID0 + EBS (io1/2-BE/GP2/3)
 - More with temporary -> Instance Store
-** DIFFERENCE BETWEEN A NAT INSTANCE AND A NAT GATEWAY WHEN HANDLING A TIMEOUT:
+** Difference Between NAT Instance & NAT Gateway When Handling Timeout:
 NAT Instance - When there is a connection time out, a NAT instance sends a FIN packet to resources behind the NAT instance to close the connection.
 NAT Gateway - When there is a connection time out, a NAT gateway returns an RST packet to any resources behind the NAT gateway that attempt to continue the connection (it does not send a FIN packet)
 * Interesting Points
