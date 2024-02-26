@@ -175,7 +175,6 @@
   - [[#ssl-offloading][SSL Offloading]]
   - [[#static-ips][Static IPS]]
   - [[#ddos-mitigation-without-aws-shields][DDoS Mitigation Without AWS Shields]]
-- [[#resources][Resources]]
 
 * Compute
 ** EC2
@@ -6000,11 +5999,3 @@ NAT Gateway - When there is a connection time out, a NAT gateway returns an RST 
 - Use WAF with the ALB to route traffic to the ASG and protect it from common web exploits.
 - Use an ASG to scale for massive incoming of data.
 - Use CW alerts to scale the ASG and send alerts with "CPUUtilization" and "NetworkIn" metrics.
-* Resources
-- [[https://tutorialsdojo.com/aws-cheat-sheets/][Tutorials Dojo AWS Cheat Sheets]]
-- [[https://learn.cantrill.io/p/aws-certified-solutions-architect-professional][Cantril Course - AWS Certified Solutions Architect Professional]]
-- [[https://docs.aws.amazon.com/][AWS Docs]]
-- [[https://portal.tutorialsdojo.com/courses/aws-certified-solutions-architect-professional-practice-exams/][Tutorials Dojo Practice Exams]]
-- [[https://www.udemy.com/course/aws-certified-solutions-architect-professional-aws-practice-exams/][Neal Davis Udemy Practice Exams]]
-- [[https://www.udemy.com/course/practice-exam-aws-certified-solutions-architect-professional/][Stephane Maarek Udemy Practice Exams]]
-- [[https://www.whizlabs.com/aws-solutions-architect-professional/][Whizlabs Practice Exams]]

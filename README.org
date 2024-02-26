@@ -1,0 +1,14 @@
+Collection of AWS notes for preparing for the AWS Solutions Architect Professional Certificate (AWS SAP-C02).
+
+#+begin_quote
+Disclamer: Latest update <2024-02-26 Mon>. This notes might be not up to date. Check with AWS Docs.
+#+end_quote
+
+* Resources
+- [[https://tutorialsdojo.com/aws-cheat-sheets/][Tutorials Dojo AWS Cheat Sheets]]
+- [[https://learn.cantrill.io/p/aws-certified-solutions-architect-professional][Cantril Course - AWS Certified Solutions Architect Professional]]
+- [[https://docs.aws.amazon.com/][AWS Docs]]
+- [[https://portal.tutorialsdojo.com/courses/aws-certified-solutions-architect-professional-practice-exams/][Tutorials Dojo Practice Exams]]
+- [[https://www.udemy.com/course/aws-certified-solutions-architect-professional-aws-practice-exams/][Neal Davis Udemy Practice Exams]]
+- [[https://www.udemy.com/course/practice-exam-aws-certified-solutions-architect-professional/][Stephane Maarek Udemy Practice Exams]]
+- [[https://www.whizlabs.com/aws-solutions-architect-professional/][Whizlabs Practice Exams]]
