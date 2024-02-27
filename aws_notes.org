@@ -85,7 +85,7 @@
   - [[#auto-scaling][Auto Scaling]]
   - [[#control-tower][Control Tower]]
   - [[#cloudwatch][CloudWatch]]
-  - [[#cloudtrail][Cloudtrail]]
+  - [[#cloudtrail][CloudTrail]]
   - [[#trusted-advisor][Trusted Advisor]]
   - [[#system-manager][System Manager]]
   - [[#tag-editor][Tag Editor]]
@@ -1322,11 +1322,13 @@ Provides detailed records for the requests that are made to a bucket.
 - Includes the IP addresses that issued the requests.
 - S3 stores server access logs as objects in an S3 bucket.
 - Athena can then be used to query Amazon S3 access logs using SQL queries.
+
 **** CloudTrail Data Events
 Capture the last 90 days of bucket-level events (i.e. PutBucketPolicy and DeleteBucketPolicy) and you can enable object-level logging.
 
 - Find the IP addresses used with each upload to your bucket.
 - It might take a few hours for CloudTrail to start creating logs.
+
 *** Access Points
 Simplify managing access to S3 buckets and objects by splitting a bucket in mini buckets.
 
@@ -3698,7 +3700,7 @@ User directories that provide sign-up and sign-in options for your app users.
 Federate users to AWS services using temporary credentials.
 
 - *IMPORTANT:* Unauthenticated access allowed where users request an identity ID via the GetId API
-- *IMPORTANT:* Once authenticated with an OpenID toke, temporary AWS credentials can be acquired via the AssumeRoleWithWebIdentity API.
+- *IMPORTANT:* Once authenticated with an OpenID token, temporary AWS credentials can be acquired via the AssumeRoleWithWebIdentity API.
 
 - Permissions for each authenticated and non-authenticated user are controlled through IAM roles
 - Save user profile information, the identity pool needs to be integrated with a user pool.
@@ -4219,7 +4221,7 @@ Collect more logs and system-level metrics from EC2 instances and on-premises se
 - Cloudwatch Metric Streams: create a continuous, near real-time stream of metrics to a destination of your choice.
   - Send metrics to Datadog, New Relic, Splunk, Dynatrace, Sumo Logic, and S3.
 
-** Cloudtrail
+** CloudTrail
 Log APIs calls/activities from AWS activities.
 
 - *IMPORTANT:* NO REALTIME, there is a delay. Withing 15 minutes.
