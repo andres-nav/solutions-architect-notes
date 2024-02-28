@@ -3,7 +3,7 @@
 :END:
 #+title:NOTES AWS
 
-*IMPORTANT:* Latest update <2024-02-16 Fri>. This notes might be not up to date. Check with AWS Docs.
+*IMPORTANT:* Latest update <2024-02-27 Tue>. This notes might be not up to date. Check with AWS Docs.
 
 * Table of Contents :TOC:
 - [[#compute][Compute]]
